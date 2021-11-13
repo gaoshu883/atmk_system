@@ -1,15 +1,12 @@
 <template>
-  <div>
-    Monitor
-  </div>
+  <div>Question</div>
 </template>
 
 <script>
-export default {
-  name: 'Monitor'
-}
+  export default {
+    name: 'Question'
+  }
 </script>
 
 <style scoped>
-
 </style>
