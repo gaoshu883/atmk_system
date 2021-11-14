@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
-from . import utils
+from atmk_system.utils import response_success, response_error
 import json
 
 
@@ -18,9 +18,9 @@ def login(request):
     if user_obj:
         # 校验成功，调用auth.login（request, user_obj）方法：
         auth.login(request, user_obj)
-        return utils.response_success(data={})
+        return response_success(data={})
     else:
-        return utils.response_error('login error')
+        return response_error('login error')
 
 
 @require_POST
@@ -32,6 +32,6 @@ def logout(request):
 
 @login_required
 def user_info(request):
-    return utils.response_success(data={
+    return response_success(data={
         'username': request.user.username
     })
