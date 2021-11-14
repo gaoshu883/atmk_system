@@ -1,4 +1,9 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
-def index(request):
-    return HttpResponse("Hello, world. You're at the math index.")
+
+def questions(request):
+    return HttpResponse("获取列表数据")
+
+
+def labels(request):
+    return JsonResponse({'status': 0, 'url': ''})

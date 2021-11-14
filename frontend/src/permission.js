@@ -23,15 +23,14 @@ router.beforeEach((to, from, next) => {
       next({ path: defaultRoutePath })
       NProgress.done()
     } else {
-      // check login user.roles is null
-      if (store.getters.roles.length === 0) {
-        // request login userInfo
+      if (store.getters.logined) {
+        next()
+      } else {
         store
           .dispatch('GetInfo')
           .then(res => {
-            const roles = res.result && res.result.role
             // generate dynamic router
-            store.dispatch('GenerateRoutes', { roles }).then(() => {
+            store.dispatch('GenerateRoutes').then(() => {
               // 根据roles权限生成可访问的路由表
               // 动态添加可访问路由表
               // VueRouter@3.5.0+ New API
@@ -49,7 +48,8 @@ router.beforeEach((to, from, next) => {
               }
             })
           })
-          .catch(() => {
+          .catch(error => {
+            console.log(error)
             notification.error({
               message: '错误',
               description: '请求用户信息失败，请重试'
@@ -59,8 +59,6 @@ router.beforeEach((to, from, next) => {
               next({ path: loginRoutePath, query: { redirect: to.fullPath } })
             })
           })
-      } else {
-        next()
       }
     }
   } else {
