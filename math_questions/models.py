@@ -8,7 +8,7 @@ class Content(models.Model):
     """题目模型类"""
 
     text = models.TextField(verbose_name="题目文本")
-    label_img = models.CharField(max_length=256, verbose_name="题目标签图片")
+    label_img = models.CharField(max_length=625, verbose_name="题目标签图片")
     updated_at = models.IntegerField(default=time.time)
     created_at = models.IntegerField(default=time.time)
 
