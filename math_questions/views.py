@@ -1,14 +1,20 @@
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
-from math_questions.models import Knowledge
-from atmk_system.utils import response_success, response_error
+from math_questions.models import Knowledge, Content
+from atmk_system.utils import response_success, response_error, collect
 
 
 def questions(request):
-    return HttpResponse("获取列表数据")
+    page = int(request.GET.get('page', default='1'))
+    size = int(request.GET.get('size', default='0'))
+    data, count = collect(Content, page=page, size=size)
+    return response_success(data={
+        'data': data,
+        'count': count
+    })
 
 
 @login_required
 def labels(request):
-    obj = Knowledge.objects.all().values('name', 'uuid', 'parent_uuid')
-    return response_success(data=list(obj))
+    data, count = collect(Knowledge)
+    return response_success(data=data)

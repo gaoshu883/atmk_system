@@ -12,9 +12,10 @@ export function getMathKnowledge() {
   })
 }
 
-export function getMathContent() {
+export function getMathContent(params) {
   return request({
     url: systemApi.Question,
-    method: 'get'
+    method: 'get',
+    params: params
   })
 }
