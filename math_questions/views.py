@@ -19,7 +19,6 @@ def questions(request):
             temp = model_to_dict(query)
             ret.append(temp['label_id'])
         u['labels'] = ret
-        print(list(query_set.values('label_id')))
     return response_success(data={
         'data': data,
         'count': count
