@@ -29,3 +29,16 @@ class Knowledge(models.Model):
     class Meta:
         verbose_name = "知识点"
         verbose_name_plural = "知识点"
+
+
+class KnowledgeTag(models.Model):
+    """知识点标记模型类"""
+
+    qid = models.BigIntegerField()
+    label_id = models.BigIntegerField()
+    updated_at = models.IntegerField(default=time.time)
+    created_at = models.IntegerField(default=time.time)
+
+    class Meta:
+        verbose_name = "知识点标记"
+        verbose_name_plural = "知识点标记"

@@ -5,7 +5,6 @@
 </template>
 
 <script>
-  import { getMathKnowledge } from '@/api/system'
   export default {
     name: 'Knowledge',
     data() {
@@ -14,16 +13,6 @@
       }
     },
     methods: {
-      getData() {
-        getMathKnowledge()
-          .then((res) => {
-            const temp = this.mapTreeData(res.data, '')
-            this.treeData = temp
-          })
-          .catch((error) => {
-            console.log('getMathKnowledge error', error)
-          })
-      },
       mapTreeData(list, pid) {
         const children = []
         list
@@ -41,7 +30,13 @@
       }
     },
     created() {
-      this.getData()
+      this.$store.dispatch('getLabels')
+    },
+    watch: {
+      '$store.getters.labels'(list) {
+        const temp = this.mapTreeData(list, '')
+        this.treeData = temp
+      }
     }
   }
 </script>

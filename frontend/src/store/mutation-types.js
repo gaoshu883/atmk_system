@@ -22,3 +22,7 @@ export const NAV_THEME = {
   LIGHT: 'light',
   DARK: 'dark'
 }
+
+export const SET_QUESTION_LABELS_LOADING = 'set_question_labels_loading'
+export const SET_QUESTION_LABELS = 'set_question_labels'
+export const RESET_QUESTION_LABELS = 'reset_question_labels'
