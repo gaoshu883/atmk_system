@@ -33,9 +33,12 @@
       this.$store.dispatch('getLabels')
     },
     watch: {
-      '$store.getters.labels'(list) {
-        const temp = this.mapTreeData(list, '')
-        this.treeData = temp
+      '$store.getters.labels': {
+        immediate: true,
+        handler(list) {
+          const temp = this.mapTreeData(list, '')
+          this.treeData = temp
+        }
       }
     }
   }
