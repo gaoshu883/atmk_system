@@ -3,7 +3,9 @@ import request from '@/utils/request'
 const systemApi = {
   Label: '/math_questions/label_list',
   Question: '/math_questions/content_list',
-  ManualTag: '/math_questions/manual_tag'
+  ManualTag: '/math_questions/manual_tag',
+  CleanResult: '/math_questions/cleaned_result',
+  CleanQuestion: '/math_questions/clean_data'
 }
 
 export function getMathKnowledge() {
@@ -26,5 +28,22 @@ export function tagQuestion(params) {
     url: systemApi.ManualTag,
     method: 'post',
     data: params
+  })
+}
+
+export function getCleanResult(params) {
+  return request({
+    url: systemApi.CleanResult,
+    method: 'get',
+    params: params
+  })
+}
+
+export function postCleanData(params) {
+  return request({
+    url: systemApi.CleanQuestion,
+    method: 'post',
+    data: params,
+    timeout: 0
   })
 }

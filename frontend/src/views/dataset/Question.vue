@@ -56,16 +56,21 @@
           {
             title: '题目',
             dataIndex: 'text',
-            width: '50%',
+            width: '30%',
             customRender: (text) => (
               <div
                 {...{
                   domProps: {
-                    innerHTML: unescape(text)
+                    innerHTML: text
                   }
                 }}
               ></div>
             )
+          },
+          {
+            title: '文本',
+            dataIndex: 'clean_text',
+            width: '30%'
           },
           {
             title: '知识点',
@@ -177,6 +182,3 @@
     }
   }
 </script>
-
-<style scoped>
-</style>
