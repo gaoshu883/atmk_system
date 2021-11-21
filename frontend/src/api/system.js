@@ -18,8 +18,8 @@ export function getMathKnowledge() {
 export function getMathContent(params) {
   return request({
     url: systemApi.Question,
-    method: 'get',
-    params: params
+    method: 'post',
+    data: params
   })
 }
 

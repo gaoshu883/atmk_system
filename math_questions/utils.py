@@ -25,11 +25,37 @@ def clean_html(raw_html: str = '', id: int = 0):
     '''清除空格、序号、答案括号等字符'''
     text = ''.join(text.split())  # 空格去不掉的解决方法
     text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text)
-    return text, math_dict
+    '''将模式替换成公式'''
+    math_text = re.sub(r'HOLEL_\d+_WLDOR_\d+',
+                       lambda matched: replace_formula(matched, math_dict), text)
+    math_text = ''.join(math_text.split())  # 去除空字符
+    return text, math_dict, math_text
 
 
-def remove_similar(contents: list):
+def replace_formula(matched, formulas) -> str:
+    value = matched.group()
+    if value in formulas:
+        return formulas[value]
+    return value
+
+
+def remove_same(contents: list):
     '''
     题目去重
-    对相似度高的题目进行警告处理
+    对一样的题目进行警告处理
+    id,text,formulas,math_text
+    利用math_text进行比较
     '''
+    print('开始检查重复项...')
+    ret = {}
+    temp = []
+    for u in contents:
+        f_id = u['id']
+        text = u['math_text']
+        if text in ret:
+            print('题目 %d 和题目 %d' % (f_id, ret[text]))
+        else:
+            ret[text] = f_id
+            temp.append(u)
+    print('检查完毕^^')
+    return temp

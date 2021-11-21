@@ -1,5 +1,9 @@
 <template>
   <a-card>
+    <div>
+      <a-input-search placeholder="请输入题目序号" style="width: 200px" v-model="filter.id" @search="onSearch" />
+    </div>
+    <a-divider />
     <a-table
       :loading="loading"
       rowKey="id"
@@ -13,7 +17,14 @@
       </template>
     </a-table>
 
-    <a-modal width="80%" title="知识点标记" v-model="visible" @ok="handleSubmit" :confirmLoading="pending">
+    <a-modal
+      width="80%"
+      title="知识点标记"
+      :maskClosable="false"
+      v-model="visible"
+      @ok="handleSubmit"
+      :confirmLoading="pending"
+    >
       <p><img :src="question.label_img" alt="知识点图片" /></p>
       <a-select
         mode="multiple"
@@ -98,9 +109,12 @@
           labels: []
         },
         pagination: {
-          pageSize: 20,
+          pageSize: 100,
           current: 1,
           total: 0
+        },
+        filter: {
+          id: null
         }
       }
     },
@@ -115,6 +129,17 @@
           data = labels.filter((item) => item.name.includes(this.searchKey))
         }
         return data
+      },
+      query() {
+        const temp = []
+        const { id } = this.filter
+        if (id) {
+          temp.push({
+            field: 'id',
+            eq: id
+          })
+        }
+        return temp
       }
     },
     methods: {
@@ -123,7 +148,8 @@
         const { current, pageSize } = this.pagination
         getMathContent({
           page: current,
-          size: pageSize
+          size: pageSize,
+          cond: this.query
         })
           .then((res) => {
             this.data = res.data.data
@@ -174,6 +200,10 @@
         } else {
           return id
         }
+      },
+      onSearch() {
+        this.pagination.current = 1
+        this.getData()
       }
     },
     created() {

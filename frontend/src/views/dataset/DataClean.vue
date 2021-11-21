@@ -31,11 +31,11 @@
     <br />
     <a-card title="数据分析">
       <a-descriptions bordered>
-        <a-descriptions-item label="题目数量">{{}}</a-descriptions-item>
+        <a-descriptions-item label="题目数量">{{ result.q_count }}</a-descriptions-item>
         <a-descriptions-item label="标签数量"> {{}} </a-descriptions-item>
         <a-descriptions-item label="平均标签数量">{{}}</a-descriptions-item>
         <a-descriptions-item label="标签排序">
-          <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns" />
+          <a-table :pagination="false" bordered :dataSource="result.list" :columns="labelColumns" />
           <!-- TODO 柱状图 -->
         </a-descriptions-item>
       </a-descriptions>
@@ -84,7 +84,23 @@
             )
           }
         ],
-        result: {}
+        result: {
+          list: []
+        },
+        labelColumns: [
+          {
+            title: '标签序号',
+            dataIndex: 'id'
+          },
+          {
+            title: '标签',
+            dataIndex: 'name'
+          },
+          {
+            title: '标记次数',
+            dataIndex: 'num'
+          }
+        ]
       }
     },
     methods: {
@@ -112,12 +128,12 @@
           })
       },
       parseData(data) {
-        const { text, formulas, analysis } = data.demo_data || {}
+        const { text, formulas } = data.demo_data || {}
         const temp = Object.entries(formulas).map(([key, value]) => ({ key, value }))
         Object.assign(this, {
           fileName: data.file_name,
           demoData: { text, formulas: temp },
-          result: analysis,
+          result: data.analysis,
           updatedAt: moment(data.updated_at * 1000).format('YYYY-MM-DD HH:mm:ss')
         })
       }

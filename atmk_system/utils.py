@@ -11,6 +11,33 @@ def response_error(error_msg: str = "") -> JsonResponse:
     return JsonResponse({"status": 0, "msg": error_msg})
 
 
+def parse_cond(condtion) -> dict:
+    """
+    [
+        {
+            "field": "account_id",
+            "eq": 1,  # equals(int)
+            "lt": 1,  # less than(int)
+            "gt": 1,  # greater than(int)
+            "contains": "text" # contains(str)
+        },
+    ]
+    """
+    ret = {}
+    for cond in condtion:
+        field = cond["field"]
+        if "eq" in cond:
+            ret[field] = cond["eq"]
+        elif "lt" in cond:
+            ret[f"{field}__lt"] = cond["lt"]
+        elif "gt" in cond:
+            ret[f"{field}__gt"] = cond["gt"]
+        elif "contains" in cond:
+            ret[f"{field}__contains"] = cond["contains"]
+
+    return ret
+
+
 def collect(
     model,
     conditions=None,
@@ -24,7 +51,7 @@ def collect(
     if not conditions:
         query_sets = model.objects.all()
     else:
-        query_sets = model.objects.filter(**conditions)
+        query_sets = model.objects.filter(**parse_cond(conditions))
     count = len(query_sets)
 
     if order_by:
