@@ -17,3 +17,6 @@ python manage.py makemigrations math_questions
 ```bash
 python manage.py migrate
 ```
+
+## 鸣谢
++ [TangentCFT](https://github.com/BehroozMansouri/TangentCFT)
