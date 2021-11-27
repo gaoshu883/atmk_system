@@ -5,7 +5,8 @@ const systemApi = {
   Question: '/math_questions/content_list',
   ManualTag: '/math_questions/manual_tag',
   CleanResult: '/math_questions/cleaned_result',
-  CleanQuestion: '/math_questions/clean_data'
+  CleanQuestion: '/math_questions/clean_data',
+  ReadVector: '/math_questions/read_vector'
 }
 
 export function getMathKnowledge() {
@@ -42,6 +43,15 @@ export function getCleanResult(params) {
 export function postCleanData(params) {
   return request({
     url: systemApi.CleanQuestion,
+    method: 'post',
+    data: params,
+    timeout: 0
+  })
+}
+
+export function getVectorByType(params) {
+  return request({
+    url: systemApi.ReadVector,
     method: 'post',
     data: params,
     timeout: 0

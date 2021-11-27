@@ -24,7 +24,7 @@
       </p>
       <br />
       <a-card title="示例" size="small">
-        <p>题目：{{ demoData.text }}</p>
+        <p>{{ demoData.text }}</p>
         <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns" />
       </a-card>
     </a-card>

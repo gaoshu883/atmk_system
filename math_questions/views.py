@@ -8,6 +8,10 @@ from .const import CACHE_FILE_PICKLE
 
 from .utils import clean_html, remove_same
 
+from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
+from MathByte.embeddings import Embeddings
+
+
 import json
 import time
 import pickle
@@ -71,7 +75,19 @@ def tag(request):
 @login_required
 @require_POST
 def clean(request):
-    '''从数据库读取题目，清洗、去重、提取公式、分析后保存到文件'''
+    '''
+    从数据库读取题目，清洗、去重、提取公式、分析后保存到文件
+    [
+        {
+            "id": 1,
+            "text":"题目文本",
+            "math_text": "题目文本 with formulas",
+            "formulas": {
+                "key": "mathML"
+            }
+        }
+    ]
+    '''
     query_set = Content.objects.all().values('text', 'id')
     temp = []
     for u in list(query_set):
@@ -128,5 +144,29 @@ def cleaned_data(request):
 
 @login_required
 @require_POST
-def content_ayalysis():
+def content_ayalysis(request):
     return response_success(data={})
+
+
+@login_required
+@require_POST
+def read_vector(request):
+    '''
+    读取字、数学公式向量
+    '''
+    data = json.loads(request.body)
+    type_id = data.get('type')
+    result = {}
+    system = Embeddings()
+    if type_id == 'char':
+        char_list = ''.join(data.get('value').split())  # 按字切分
+        for char in char_list:
+            result[char] = system.read_char_vec(query_char=char).tolist()
+    elif type_id == 'formula':
+        query_formula = data.get('value')
+        result[data.get('key')] = system.read_formula_vec(
+            query_formula=query_formula).tolist()
+    else:
+        pass
+
+    return response_success(data=result)
