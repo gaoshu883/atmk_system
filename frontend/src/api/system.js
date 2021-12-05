@@ -20,7 +20,8 @@ export function getMathContent(params) {
   return request({
     url: systemApi.Question,
     method: 'post',
-    data: params
+    data: params,
+    timeout: 0
   })
 }
 

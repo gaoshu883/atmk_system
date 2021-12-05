@@ -22,6 +22,12 @@ export const asyncRouterMap = [
         meta: { title: '数据集', keepAlive: true, icon: 'database' },
         children: [
           {
+            path: '/dataset/tag',
+            name: 'Tag',
+            component: () => import('@/views/dataset/Tag'),
+            meta: { title: '打标签', keepAlive: false }
+          },
+          {
             path: '/dataset/question',
             name: 'Question',
             component: () => import('@/views/dataset/Question'),

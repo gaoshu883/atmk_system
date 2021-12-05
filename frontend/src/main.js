@@ -10,6 +10,7 @@ import i18n from './locales'
 import { VueAxios } from './utils/request'
 import ProLayout, { PageHeaderWrapper } from '@ant-design-vue/pro-layout'
 import themePluginConfig from '../config/themePluginConfig'
+import VueLazyload from 'vue-lazyload'
 
 import bootstrap from './core/bootstrap'
 import './core/lazy_use' // use lazy load components
@@ -25,6 +26,9 @@ Vue.use(VueAxios)
 Vue.component('pro-layout', ProLayout)
 Vue.component('page-container', PageHeaderWrapper)
 Vue.component('page-header-wrapper', PageHeaderWrapper)
+Vue.use(VueLazyload, {
+  attempt: 1
+})
 
 window.umi_plugin_ant_themeVar = themePluginConfig.theme
 
