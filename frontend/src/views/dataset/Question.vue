@@ -46,6 +46,7 @@
 
 <script>
   import { getMathContent, tagQuestion } from '@/api/system'
+  import { labelMixin } from '@/store/dataset-mixin'
   import debounce from 'lodash.debounce'
   import cloneDeep from 'lodash.clonedeep'
   export default {
@@ -109,7 +110,7 @@
           labels: []
         },
         pagination: {
-          pageSize: 100,
+          pageSize: 10,
           current: 1,
           total: 0
         },
@@ -142,6 +143,7 @@
         return temp
       }
     },
+    mixins: [labelMixin],
     methods: {
       getData() {
         this.loading = true
@@ -192,15 +194,6 @@
       searchLabels(value) {
         this.searchKey = value
       },
-      getLabelName(id) {
-        const { labels } = this.$store.getters
-        const item = labels.find((item) => item.id === id)
-        if (item) {
-          return item.name
-        } else {
-          return id
-        }
-      },
       onSearch() {
         this.pagination.current = 1
         this.getData()
@@ -208,7 +201,6 @@
     },
     created() {
       this.getData()
-      this.$store.dispatch('getLabels')
     }
   }
 </script>

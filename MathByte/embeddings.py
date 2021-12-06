@@ -13,6 +13,12 @@ class Embeddings:
         char_vec = math_word2vec_char_model.wv[query_char]
         return char_vec
 
+    def read_word_vec(self, query_word):
+        math_word2vec_char_model = Word2Vec.load(
+            'file_data/math_text_char.model')
+        char_vec = math_word2vec_char_model.wv[query_word]
+        return char_vec
+
     def read_formula_vec(self, query_formula):
         model_file_path = 'file_data/da-20k/slt_model'  # Model file path
         map_file_path = 'file_data/da-20k/slt_encoder.tsv'

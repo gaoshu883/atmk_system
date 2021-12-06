@@ -22,12 +22,6 @@ export const asyncRouterMap = [
         meta: { title: '数据集', keepAlive: true, icon: 'database' },
         children: [
           {
-            path: '/dataset/tag',
-            name: 'Tag',
-            component: () => import('@/views/dataset/Tag'),
-            meta: { title: '打标签', keepAlive: false }
-          },
-          {
             path: '/dataset/question',
             name: 'Question',
             component: () => import('@/views/dataset/Question'),
@@ -38,6 +32,12 @@ export const asyncRouterMap = [
             name: 'Knowledge',
             component: () => import('@/views/dataset/Knowledge'),
             meta: { title: '知识点管理', keepAlive: false }
+          },
+          {
+            path: '/dataset/tag',
+            name: 'Tag',
+            component: () => import('@/views/dataset/Tag'),
+            meta: { title: '打标签', keepAlive: false }
           }
         ]
       },
@@ -52,6 +52,12 @@ export const asyncRouterMap = [
         name: 'Preprocess',
         component: () => import('@/views/dataset/Preprocess'),
         meta: { title: '数据预处理', icon: 'highlight', keepAlive: true }
+      },
+      {
+        path: '/summary',
+        name: 'Summary',
+        component: () => import('@/views/dataset/Summary'),
+        meta: { title: '数据分析', icon: 'pie-chart', keepAlive: true }
       },
       {
         path: '/atmkmodel',

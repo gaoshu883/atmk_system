@@ -4,11 +4,10 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE
+from .const import CACHE_FILE_PICKLE, CACHE_FINAL_PICKLE
 
 from .utils import clean_html, remove_same
 
-from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
 from MathByte.embeddings import Embeddings
 
 
@@ -34,7 +33,7 @@ def questions(request):
             temp = model_to_dict(query)
             ret.append(temp['label_id'])
         u['labels'] = ret
-        u['clean_text'], math_dict, math_text = clean_html(
+        u['clean_text'], a, b, c, d = clean_html(
             u['text'], u['id'])
     return response_success(data={
         'data': data,
@@ -82,8 +81,11 @@ def clean(request):
             "id": 1,
             "text":"题目文本",
             "math_text": "题目文本 with formulas",
+            "char_list": [],
+            "word_list": [],
+            "label_list": [],
             "formulas": {
-                "key": "mathML"
+                "HEL_45293_WLDOR_1_OL": "mathML"
             }
         }
     ]
@@ -92,20 +94,23 @@ def clean(request):
     temp = []
     for u in list(query_set):
         ret = {}
-        ret['id'] = u['id']
-        ret['text'], ret['formulas'], ret['math_text'] = clean_html(
-            u['text'], u['id'])
-        temp.append(ret)
+        qid = u['id']
+        label_list = []
+        label_set = KnowledgeTag.objects.filter(
+            qid=qid).values('label_id').distinct()
+        for query in list(label_set):
+            label_list.append(query['label_id'])
+        # 排除无标签数据
+        if label_list:
+            ret['id'] = qid
+            ret['label_list'] = label_list
+            ret['text'], ret['formulas'], ret['math_text'], \
+                ret['char_list'], ret['word_list'] = clean_html(
+                u['text'], qid)
+            temp.append(ret)
 
     clean_list = remove_same(temp)
-    # 分析数据
-    label_set = set()
-    for u in clean_list:
-        query_set = KnowledgeTag.objects.filter(qid=u['id']).values('label_id')
-        for query in list(query_set):
-            label_set.add(query['label_id'])
-    l_count = len(label_set)  # 知识点数量
-    q_count = len(clean_list)  # 题目数量
+
     try:
         with open(CACHE_FILE_PICKLE, 'wb') as target_file:
             pickle.dump(clean_list, target_file)
@@ -115,10 +120,6 @@ def clean(request):
         'file_name': CACHE_FILE_PICKLE,
         'updated_at': int(time.time()),
         'demo_data': clean_list[0],
-        'analysis': {
-            'q_count': q_count,
-            'l_count': l_count
-        }
     })
 
 
@@ -134,18 +135,105 @@ def cleaned_data(request):
             'file_name': CACHE_FILE_PICKLE,
             'updated_at': int(updated_at),
             'demo_data': temp[idx],
-            'analysis': {
-                'q_count': count
-            }
         })
     except:
         return response_success(data={})
 
 
 @login_required
-@require_POST
-def content_ayalysis(request):
-    return response_success(data={})
+def data_summary(request):
+    # 分析平衡后的数据
+    try:
+        with open(CACHE_FILE_PICKLE, 'rb') as data_f_pickle:
+            questions = pickle.load(data_f_pickle)
+            MAX_INT = 100000
+
+            total_char = 0
+            min_char = MAX_INT
+            max_char = 0
+            avg_char = 0
+            total_word = 0
+            min_word = MAX_INT
+            max_word = 0
+            avg_word = 0
+            total_formula = 0
+            min_formula = MAX_INT
+            max_formula = 0
+            avg_formula = 0
+            total_label = 0
+            min_label = MAX_INT
+            max_label = 0
+            avg_label = 0
+            label_set = set()
+            for u in questions:
+                char_list_len = len(u['char_list'])
+                total_char += char_list_len
+                min_char = min(char_list_len, min_char)
+                max_char = max(char_list_len, max_char)
+                word_list_len = len(u['word_list'])
+                total_word += word_list_len
+                min_word = min(word_list_len, min_word)
+                max_word = max(word_list_len, max_word)
+                formula_len = len(u['formulas'])
+                total_formula += formula_len
+                min_formula = min(formula_len, min_formula)
+                max_formula = max(formula_len, max_formula)
+                label_len = len(u['label_list'])
+                total_label += label_len
+                min_label = min(label_len, min_label)
+                max_label = max(label_len, max_label)
+                # 用于统计不重复label数
+                label_set.update(u['label_list'])
+
+            l_count = len(label_set)
+            q_count = len(questions)
+            avg_char = round(total_char / q_count, 2)
+            avg_word = round(total_word / q_count, 2)
+            avg_formula = round(total_formula / q_count, 2)
+            avg_label = round(total_label / q_count, 2)
+
+            ret = {}
+            total_tag = 0
+            min_tag = MAX_INT
+            max_tag = 0
+            avg_tag = 0
+            for label_id in label_set:
+                query_set = KnowledgeTag.objects.filter(
+                    label_id=label_id).values('qid').distinct()
+                tag_len = len(list(query_set))
+                ret[str(label_id)] = tag_len
+                total_tag += tag_len
+                min_tag = min(tag_len, min_tag)
+                max_tag = max(tag_len, max_tag)
+            avg_tag = round(total_tag / l_count, 2)
+
+        return response_success(data={
+            'question': {
+                'count': q_count,  # 题目数量
+                'min_char': min_char,  # 最小字符数
+                'max_char': max_char,  # 最大字符数
+                'avg_char': avg_char,  # 平均字符数
+                'min_word': min_word,  # 最小词数
+                'max_word': max_word,  # 最大词数
+                'avg_word': avg_word,  # 平均词数
+                'min_formula': min_formula,  # 最小公式数
+                'max_formula': max_formula,  # 最大公式数
+                'avg_formula': avg_formula,  # 平均公式数
+                'min_label': min_label,  # 最小标签数
+                'max_label': max_label,  # 最大标签数
+                'avg_label': avg_label,  # 平均标签数
+            },
+            'label': {
+                'count': l_count,  # 标签数
+                'min_tag': min_tag,  # 标记最小数
+                'max_tag': max_tag,  # 标记最大数
+                'avg_tag': avg_tag,  # 平均标记数
+            },
+            'label_tags': ret  # 每个标签对应的标记数
+        })
+    except Exception as e:
+        print(e)
+        return response_success(data={})
 
 
 @login_required

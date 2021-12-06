@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+import jieba
 import re
 
 
@@ -18,7 +19,7 @@ def clean_html(raw_html: str = '', id: int = 0):
     '''数学表达式替换-提取'''
     math_dict = {}
     for inx, tag in enumerate(soup.select('math')):
-        key = 'HOLEL_%d_WLDOR_%d' % (id, inx)
+        key = 'HEL_%d_WLDOR_%d_OL' % (id, inx)
         math = tag.replace_with(key)
         math_dict[key] = str(math)
     text = content.get_text()
@@ -26,10 +27,22 @@ def clean_html(raw_html: str = '', id: int = 0):
     text = ''.join(text.split())  # 空格去不掉的解决方法
     text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text)
     '''将模式替换成公式'''
-    math_text = re.sub(r'HOLEL_\d+_WLDOR_\d+',
+    math_text = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
                        lambda matched: replace_formula(matched, math_dict), text)
     math_text = ''.join(math_text.split())  # 去除空字符
-    return text, math_dict, math_text
+    '''
+    切字、词
+    文本按公式拆分成块处理
+    '''
+    char_list = []
+    word_list = []
+    text_list = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
+                    lambda matched: 'HELLO_WORLD', text).split('HELLO_WORLD')
+    for u in text_list:
+        char_list.extend(cut_char(u))
+        word_list.extend(cut_word(u))
+
+    return text, math_dict, math_text, char_list, word_list
 
 
 def replace_formula(matched, formulas) -> str:
@@ -59,3 +72,18 @@ def remove_same(contents: list):
             temp.append(u)
     print('检查完毕^^')
     return temp
+
+
+def cut_char(text: str) -> list:
+    '''
+    切字符
+    '''
+    return list(text)
+
+
+def cut_word(text: str) -> list:
+    '''
+    切词
+    '''
+    seg_list = jieba.cut(text, cut_all=False)
+    return seg_list

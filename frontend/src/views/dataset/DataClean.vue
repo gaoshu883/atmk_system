@@ -7,6 +7,8 @@
           <li>题号、选项序号：1、(1)、A、</li>
           <li>用于显示答案位置的括号（）</li>
           <li>一些标签：table、input、img、.exam-foot</li>
+          <li>没有标签的题目</li>
+          <li>重复的题目</li>
         </ul>
       </a-alert>
       <br />
@@ -17,7 +19,7 @@
         <span>
           清洗于：<strong>{{ updatedAt }}</strong>
         </span>
-        <span>（清洗时间~1.6min）</span>
+        <span>（清洗时间~5min）</span>
       </p>
       <p>
         <a-button type="primary" style="width: 100px" @click="cleanData" :loading="pending">清洗</a-button>
@@ -27,18 +29,6 @@
         <p>{{ demoData.text }}</p>
         <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns" />
       </a-card>
-    </a-card>
-    <br />
-    <a-card title="数据分析">
-      <a-descriptions bordered>
-        <a-descriptions-item label="题目数量">{{ result.q_count }}</a-descriptions-item>
-        <a-descriptions-item label="标签数量"> {{}} </a-descriptions-item>
-        <a-descriptions-item label="平均标签数量">{{}}</a-descriptions-item>
-        <a-descriptions-item label="标签排序">
-          <a-table :pagination="false" bordered :dataSource="result.list" :columns="labelColumns" />
-          <!-- TODO 柱状图 -->
-        </a-descriptions-item>
-      </a-descriptions>
     </a-card>
   </div>
 </template>
@@ -83,23 +73,6 @@
               ></div>
             )
           }
-        ],
-        result: {
-          list: []
-        },
-        labelColumns: [
-          {
-            title: '标签序号',
-            dataIndex: 'id'
-          },
-          {
-            title: '标签',
-            dataIndex: 'name'
-          },
-          {
-            title: '标记次数',
-            dataIndex: 'num'
-          }
         ]
       }
     },
@@ -133,7 +106,6 @@
         Object.assign(this, {
           fileName: data.file_name,
           demoData: { text, formulas: temp },
-          result: data.analysis,
           updatedAt: moment(data.updated_at * 1000).format('YYYY-MM-DD HH:mm:ss')
         })
       }

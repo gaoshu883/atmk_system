@@ -6,7 +6,8 @@ const systemApi = {
   ManualTag: '/math_questions/manual_tag',
   CleanResult: '/math_questions/cleaned_result',
   CleanQuestion: '/math_questions/clean_data',
-  ReadVector: '/math_questions/read_vector'
+  ReadVector: '/math_questions/read_vector',
+  DataSummary: '/math_questions/data_summary'
 }
 
 export function getMathKnowledge() {
@@ -54,7 +55,15 @@ export function getVectorByType(params) {
   return request({
     url: systemApi.ReadVector,
     method: 'post',
-    data: params,
+    data: params
+  })
+}
+
+export function getDataSummary(params) {
+  return request({
+    url: systemApi.DataSummary,
+    method: 'get',
+    params: params,
     timeout: 0
   })
 }
