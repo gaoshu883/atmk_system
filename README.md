@@ -19,10 +19,6 @@ python manage.py migrate
 ```
 
 ### 数据清洗
-+ 所有的空字符，包括空格、换行(\n)、制表符(\t)等
-+ 题号、选项序号：1、(1)、A、
-+ 用于显示答案位置的括号（）
-+ 一些标签：table、input、img、.exam-foot
 
 ```bash
 cd math_questions
