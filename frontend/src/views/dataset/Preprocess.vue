@@ -1,11 +1,35 @@
 <template>
   <a-card title="数据预处理">
     <p>{{ demoData.text }}</p>
-    <a-input-search style="width: 200px" placeholder="查询并下载字向量" @search="getCharVector" />
+    <a-input-group compact>
+      <a-select v-model="charVersion" style="width: 100px">
+        <a-select-option value="atmk"> atmk </a-select-option>
+        <a-select-option value="baidu"> baidu </a-select-option>
+      </a-select>
+      <a-input-search
+        style="width: 200px"
+        placeholder="查询并下载字向量"
+        @search="(value) => getVector(value, 'char')"
+      />
+    </a-input-group>
+    <br />
+    <a-input-group compact>
+      <a-select v-model="wordVersion" style="width: 100px">
+        <a-select-option value="atmk"> atmk </a-select-option>
+        <a-select-option value="baidu"> baidu </a-select-option>
+      </a-select>
+      <a-input-search
+        style="width: 200px"
+        placeholder="查询并下载词向量"
+        @search="(value) => getVector(value, 'word')"
+      />
+    </a-input-group>
+    <div style="margin-top: 8px">(读取百度预训练词向量耗时长，每词或字符~2.5min)</div>
     <a-divider />
     <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns">
       <template slot="action" slot-scope="name, record">
-        <a href="javascript:;" @click="getFormulaVector(record)">下载</a>
+        <a href="javascript:;" style="margin-right: 8px" @click="getFormulaVector(record, 'atmk')">下载(atmk)</a>
+        <a href="javascript:;" @click="getFormulaVector(record, 'wiki')">下载(wiki)</a>
       </template>
     </a-table>
   </a-card>
@@ -17,6 +41,8 @@
     name: 'Preprocess',
     data() {
       return {
+        charVersion: 'atmk',
+        wordVersion: 'atmk',
         demoData: {
           text: '',
           formulas: []
@@ -50,7 +76,7 @@
           {
             title: '向量',
             dataIndex: 'action',
-            width: 80,
+            width: 200,
             scopedSlots: { customRender: 'action' }
           }
         ]
@@ -72,10 +98,11 @@
         const temp = Object.entries(formulas).map(([key, value]) => ({ key, value }))
         this.demoData = { text, formulas: temp }
       },
-      getFormulaVector(record) {
+      getFormulaVector(record, version) {
         getVectorByType({
           ...record,
-          type: 'formula'
+          type: 'formula',
+          version
         })
           .then((res) => {
             downloadFile(JSON.stringify(res.data), `${record.key}.json`)
@@ -84,16 +111,17 @@
             console.log('getFormulaVector ...', error)
           })
       },
-      getCharVector(value) {
+      getVector(value, type) {
         getVectorByType({
-          type: 'char',
-          value: value
+          type: type,
+          value: value,
+          version: type === 'char' ? this.charVersion : this.wordVersion
         })
           .then((res) => {
             downloadFile(JSON.stringify(res.data), `${value}.json`)
           })
           .catch((error) => {
-            console.log('getCharVector ...', error)
+            console.log('getVector ...', error)
           })
       }
     },

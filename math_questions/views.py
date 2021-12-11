@@ -4,9 +4,9 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE, CACHE_FINAL_PICKLE
+from .const import CACHE_FILE_PICKLE
 
-from .utils import clean_html, remove_same
+from .utils import clean_html, remove_same, cut_word, cut_char
 
 from MathByte.embeddings import Embeddings
 
@@ -76,6 +76,8 @@ def tag(request):
 def clean(request):
     '''
     从数据库读取题目，清洗、去重、提取公式、分析后保存到文件
+    清洗掉小于n标记数的知识点
+    清洗掉小于m字符数的题目
     [
         {
             "id": 1,
@@ -90,16 +92,31 @@ def clean(request):
         }
     ]
     '''
-    query_set = Content.objects.all().values('text', 'id')
+    data = json.loads(request.body)
+    tag_min = data.get('tag_min')
+    char_min = data.get('char_min')
+
+    # 先拿出来有效的标签数据（标记数>=tag_min）
+    effect_label_list = []
+    for query in list(Knowledge.objects.all().values('id')):
+        label_id = query['id']
+        tags = KnowledgeTag.objects.filter(
+            label_id=label_id).values('qid').distinct()
+        if len(tags) >= tag_min:
+            effect_label_list.append(label_id)
+
     temp = []
-    for u in list(query_set):
+    for u in list(Content.objects.all().values('text', 'id')):
         ret = {}
         qid = u['id']
+        # 读取题目的知识点列表
         label_list = []
-        label_set = KnowledgeTag.objects.filter(
-            qid=qid).values('label_id').distinct()
-        for query in list(label_set):
-            label_list.append(query['label_id'])
+        for query in list(KnowledgeTag.objects.filter(
+                qid=qid).values('label_id').distinct()):
+            label_id = query['label_id']
+            if label_id in effect_label_list:
+                label_list.append(label_id)
+
         # 排除无标签数据
         if label_list:
             ret['id'] = qid
@@ -107,7 +124,9 @@ def clean(request):
             ret['text'], ret['formulas'], ret['math_text'], \
                 ret['char_list'], ret['word_list'] = clean_html(
                 u['text'], qid)
-            temp.append(ret)
+            # 确保字符数>=char_min
+            if len(ret['char_list']) >= char_min:
+                temp.append(ret)
 
     clean_list = remove_same(temp)
 
@@ -244,17 +263,54 @@ def read_vector(request):
     '''
     data = json.loads(request.body)
     type_id = data.get('type')
+    value = data.get('value')
+    version = data.get('version')
     result = {}
     system = Embeddings()
     if type_id == 'char':
-        char_list = ''.join(data.get('value').split())  # 按字切分
+        char_list = cut_char(value)  # 按字切分
         for char in char_list:
-            result[char] = system.read_char_vec(query_char=char).tolist()
+            result[char] = system.read_text_vec(type_id=type_id,
+                                                query=char, version=version).tolist()
+    elif type_id == 'word':
+        word_list = cut_word(value)
+        for word in word_list:
+            result[word] = system.read_text_vec(type_id=type_id,
+                                                query=word, version=version).tolist()
     elif type_id == 'formula':
-        query_formula = data.get('value')
         result[data.get('key')] = system.read_formula_vec(
-            query_formula=query_formula).tolist()
+            query_formula=value, version=version).tolist()
     else:
         pass
 
     return response_success(data=result)
+
+
+@login_required
+def check_same_label(request):
+    '''拉取相同知识点的题目'''
+    try:
+        with open(CACHE_FILE_PICKLE, 'rb') as data_f_pickle:
+            questions = pickle.load(data_f_pickle)
+            ret = {}
+            for u in questions:
+                labels = u['label_list']
+                labels.sort()  # 排序
+                label_str = ','.join('%s' % id for id in labels)
+                if label_str in ret:
+                    ret[label_str].append(u)
+                else:
+                    ret[label_str] = []
+            # 默认返回长度大于1的
+            temp = []
+            for label in ret:
+                content_list = ret[label]
+                if len(content_list) > 1:
+                    temp.append({
+                        'label': label,
+                        'content': content_list
+                    })
+        return response_success(data=temp)
+    except Exception as e:
+        print(e)
+        return response_success(data={})

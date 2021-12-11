@@ -37,7 +37,7 @@ def clean_html(raw_html: str = '', id: int = 0):
     char_list = []
     word_list = []
     text_list = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
-                    lambda matched: 'HELLO_WORLD', text).split('HELLO_WORLD')
+                       lambda matched: 'HELLO_WORLD', text).split('HELLO_WORLD')
     for u in text_list:
         char_list.extend(cut_char(u))
         word_list.extend(cut_word(u))
@@ -78,7 +78,7 @@ def cut_char(text: str) -> list:
     '''
     切字符
     '''
-    return list(text)
+    return ''.join(text.split())
 
 
 def cut_word(text: str) -> list:

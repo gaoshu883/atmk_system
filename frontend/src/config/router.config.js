@@ -38,6 +38,12 @@ export const asyncRouterMap = [
             name: 'Tag',
             component: () => import('@/views/dataset/Tag'),
             meta: { title: '打标签', keepAlive: false }
+          },
+          {
+            path: '/dataset/check',
+            name: 'Check',
+            component: () => import('@/views/dataset/Check'),
+            meta: { title: '数据审核', keepAlive: false }
           }
         ]
       },

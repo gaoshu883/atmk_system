@@ -2,9 +2,11 @@
   <div>
     <div v-for="item in list" :key="item.id">
       {{ item.id }}
-      <img v-lazy="item.label_img" >
+      <img v-lazy="item.label_img" />
       <br />
-      <a-tag v-for="it in item.labels" :key="it">{{ getLabelName(it) }}</a-tag>
+      <span style="margin-right: 42px"></span>
+      <span style="color:green" v-for="it in item.labels" :key="it">{{ getLabelName(it) }}；</span>
+      <!-- <a-tag style="font-size: 14px" v-for="it in item.labels" :key="it">{{ getLabelName(it) }}</a-tag> -->
       <!-- <a-select
         size="small"
         mode="multiple"
@@ -34,8 +36,8 @@
         searchKey: '',
         list: [],
         pagination: {
-          pageSize: 5000,
-          current: 1, // TODO 下一页了
+          pageSize: 2000,
+          current: 13,
           total: 0
         }
       }

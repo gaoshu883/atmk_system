@@ -9,20 +9,21 @@
           <li>一些标签：table、input、img、.exam-foot</li>
           <li>没有标签的题目</li>
           <li>重复的题目</li>
+          <li>数学表达式用特殊模式替换，提供模式与数学表达式的映射</li>
+          <li>清洗掉标记数少于 <a-input-number v-model="tagNum" :min="0" /> 的知识点</li>
+          <li>清洗掉字符数少于 <a-input-number v-model="charNum" :min="0" /> 的题目</li>
         </ul>
       </a-alert>
       <br />
-      <a-alert message="数学表达式用特殊模式替换，提供模式与数学表达式的映射" />
-      <br />
+      <p>
+        <a-button type="primary" style="width: 100px" @click="cleanData" :loading="pending">清洗</a-button>
+      </p>
       <p>
         <a-tag color="green">{{ fileName }}</a-tag>
         <span>
           清洗于：<strong>{{ updatedAt }}</strong>
         </span>
         <span>（清洗时间~5min）</span>
-      </p>
-      <p>
-        <a-button type="primary" style="width: 100px" @click="cleanData" :loading="pending">清洗</a-button>
       </p>
       <br />
       <a-card title="示例" size="small">
@@ -42,6 +43,8 @@
         pending: false,
         updatedAt: 'null',
         fileName: '暂无文件',
+        tagNum: 5,
+        charNum: 5,
         demoData: {
           text: '',
           formulas: []
@@ -89,7 +92,10 @@
       },
       cleanData() {
         this.pending = true
-        postCleanData()
+        postCleanData({
+          tag_min: this.tagNum,
+          char_min: this.charNum
+        })
           .then((res) => {
             this.parseData(res.data)
           })
