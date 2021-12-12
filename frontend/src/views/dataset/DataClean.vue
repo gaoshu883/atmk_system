@@ -27,14 +27,19 @@
       </p>
       <br />
       <a-card title="示例" size="small">
-        <p>{{ demoData.text }}</p>
+        <p>题目：{{ demoData.text }}</p>
+        <p>
+          知识点：<a-tag v-for="item in demoData.labels" :key="item">{{ getLabelName(item) }} </a-tag>
+        </p>
         <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns" />
       </a-card>
     </a-card>
   </div>
 </template>
 <script>
+  /*  eslint-disable camelcase  */
   import { getCleanResult, postCleanData } from '@/api/system'
+  import { labelMixin } from '@/store/dataset-mixin'
   import moment from 'moment'
   export default {
     name: 'DataClean',
@@ -47,7 +52,8 @@
         charNum: 5,
         demoData: {
           text: '',
-          formulas: []
+          formulas: [],
+          labels: []
         },
         columns: [
           {
@@ -79,6 +85,7 @@
         ]
       }
     },
+    mixins: [labelMixin],
     methods: {
       getData() {
         getCleanResult()
@@ -107,11 +114,11 @@
           })
       },
       parseData(data) {
-        const { text, formulas } = data.demo_data || {}
+        const { text, formulas, label_list } = data.demo_data || {}
         const temp = Object.entries(formulas).map(([key, value]) => ({ key, value }))
         Object.assign(this, {
           fileName: data.file_name,
-          demoData: { text, formulas: temp },
+          demoData: { text, formulas: temp, labels: label_list },
           updatedAt: moment(data.updated_at * 1000).format('YYYY-MM-DD HH:mm:ss')
         })
       }

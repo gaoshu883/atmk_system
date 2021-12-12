@@ -1,6 +1,11 @@
 <template>
   <a-card title="数据预处理">
-    <p>{{ demoData.text }}</p>
+    <p>题目：{{ demoData.text }}</p>
+    <p>分字：{{ demoData.char_list }}</p>
+    <p>分词：{{ demoData.word_list }}</p>
+    <p>
+      知识点：<a-tag v-for="item in demoData.label_list" :key="item">{{ getLabelName(item) }} </a-tag>
+    </p>
     <a-input-group compact>
       <a-select v-model="charVersion" style="width: 100px">
         <a-select-option value="atmk"> atmk </a-select-option>
@@ -37,6 +42,7 @@
 <script>
   import { getCleanResult, getVectorByType } from '@/api/system'
   import { downloadFile } from '@/utils/util'
+  import { labelMixin } from '@/store/dataset-mixin'
   export default {
     name: 'Preprocess',
     data() {
@@ -45,7 +51,10 @@
         wordVersion: 'atmk',
         demoData: {
           text: '',
-          formulas: []
+          formulas: [],
+          label_list: [],
+          char_list: [],
+          word_list: []
         },
         columns: [
           {
@@ -82,21 +91,18 @@
         ]
       }
     },
+    mixins: [labelMixin],
     methods: {
       getData() {
         getCleanResult()
           .then((res) => {
-            const data = res.data
-            if (data.file_name) this.parseData(data)
+            const data = res.data.demo_data
+            const formulas = Object.entries(data.formulas).map(([key, value]) => ({ key, value }))
+            Object.assign(this.demoData, data, { formulas })
           })
           .catch((error) => {
             console.log(error, 'getCleanResult...')
           })
-      },
-      parseData(data) {
-        const { text, formulas } = data.demo_data || {}
-        const temp = Object.entries(formulas).map(([key, value]) => ({ key, value }))
-        this.demoData = { text, formulas: temp }
       },
       getFormulaVector(record, version) {
         getVectorByType({
