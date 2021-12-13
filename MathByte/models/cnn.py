@@ -3,9 +3,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-class EncoderCNN(nn.Module):
-    def __init__(self, config):
-        super(EncoderCNN, self).__init__()
+class Model(nn.Module):
+    def __init__(self, config, use_attention=False):
+        super(Model, self).__init__()
         if config.embedding_pretrained is not None:
             self.embedding = nn.Embedding.from_pretrained(
                 config.embedding_pretrained, freeze=False)

@@ -3,10 +3,10 @@ import torch.nn as nn
 from pytorch_pretrained import BertModel, BertTokenizer
 
 
-class EncoderBERT(nn.Module):
+class Model(nn.Module):
 
-    def __init__(self, config):
-        super(EncoderBERT, self).__init__()
+    def __init__(self, config, use_attention=False):
+        super(Model, self).__init__()
         self.bert = BertModel.from_pretrained(config.bert_path)
         for param in self.bert.parameters():
             param.requires_grad = True
