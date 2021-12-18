@@ -4,11 +4,12 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE
+from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL
 
 from .utils import clean_html, remove_same, cut_word, cut_char
 
 from MathByte.embeddings import Embeddings
+from MathByte.preprocess import DataPreprocess
 
 
 import json
@@ -33,7 +34,7 @@ def questions(request):
             temp = model_to_dict(query)
             ret.append(temp['label_id'])
         u['labels'] = ret
-        u['clean_text'], a, b, c, d = clean_html(
+        u['clean_text'], a, b, c, d, e, f = clean_html(
             u['text'], u['id'])
     return response_success(data={
         'data': data,
@@ -84,7 +85,9 @@ def clean(request):
             "text":"题目文本",
             "math_text": "题目文本 with formulas",
             "char_list": [],
+            "char_formula_list": [],
             "word_list": [],
+            "word_formula_list": [],
             "label_list": [],
             "formulas": {
                 "HEL_45293_WLDOR_1_OL": "mathML"
@@ -122,7 +125,8 @@ def clean(request):
             ret['id'] = qid
             ret['label_list'] = label_list
             ret['text'], ret['formulas'], ret['math_text'], \
-                ret['char_list'], ret['word_list'] = clean_html(
+                ret['char_list'], ret['word_list'], \
+                ret['char_formula_list'], ret['word_formula_list'] = clean_html(
                 u['text'], qid)
             # 确保字符数>=char_min
             if len(ret['char_list']) >= char_min:
@@ -253,6 +257,22 @@ def data_summary(request):
     except Exception as e:
         print(e)
         return response_success(data={})
+
+
+@login_required
+@require_POST
+def preprocess(request):
+    '''
+    准备训练集、验证集、测试集
+    准备词表（字+公式 or 词+公式）、标签表
+
+    '''
+    data = json.loads(request.body)
+    text_type = data.get('text_type')
+    DataPreprocess(text_type, CACHE_FILE_PICKLE,
+                   CACHE_MATH_DATA, CACHE_VOCAB_LABEL)
+
+    return response_success(data={})
 
 
 @login_required

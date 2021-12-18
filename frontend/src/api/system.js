@@ -8,7 +8,8 @@ const systemApi = {
   ReadVector: '/math_questions/read_vector',
   DataSummary: '/math_questions/data_summary',
   ManualTag: '/math_questions/manual_tag',
-  ManualCheck: '/math_questions/manual_check'
+  ManualCheck: '/math_questions/manual_check',
+  Preprocess: '/math_questions/preprocess'
 }
 
 export function getMathKnowledge() {
@@ -77,6 +78,16 @@ export function checkContent(params) {
     url: systemApi.ManualCheck,
     method: 'get',
     params: params,
+    timeout: 0
+  })
+}
+
+// 准备训练用训练集、验证集、测试集
+export function postDataPrecess(params) {
+  return request({
+    url: systemApi.Preprocess,
+    method: 'post',
+    data: params,
     timeout: 0
   })
 }

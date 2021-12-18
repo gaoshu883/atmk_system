@@ -19,7 +19,7 @@ export const asyncRouterMap = [
         name: 'dataset',
         redirect: '/dataset/question',
         component: RouteView,
-        meta: { title: '数据集', keepAlive: true, icon: 'database' },
+        meta: { title: '数据集', keepAlive: false, icon: 'database' },
         children: [
           {
             path: '/dataset/question',
@@ -54,28 +54,28 @@ export const asyncRouterMap = [
         meta: { title: '数据清洗', icon: 'scissor', keepAlive: false }
       },
       {
-        path: '/preprocess',
-        name: 'Preprocess',
-        component: () => import('@/views/dataset/Preprocess'),
-        meta: { title: '数据预处理', icon: 'highlight', keepAlive: true }
+        path: '/PreTrainVec',
+        name: 'PreTrainVec',
+        component: () => import('@/views/dataset/PreTrainVec'),
+        meta: { title: '预训练向量', icon: 'highlight', keepAlive: false }
       },
       {
         path: '/summary',
         name: 'Summary',
         component: () => import('@/views/dataset/Summary'),
-        meta: { title: '数据分析', icon: 'pie-chart', keepAlive: true }
+        meta: { title: '数据分析', icon: 'pie-chart', keepAlive: false }
       },
       {
         path: '/atmkmodel',
         name: 'ATMKModel',
         component: () => import('@/views/autotag/ATMKModel'),
-        meta: { title: '模型训练', icon: 'deployment-unit', keepAlive: true }
+        meta: { title: '模型训练', icon: 'deployment-unit', keepAlive: false }
       },
       {
         path: '/analysis',
         name: 'Analysis',
         component: () => import('@/views/autotag/Analysis'),
-        meta: { title: '结果分析', icon: 'monitor', keepAlive: true }
+        meta: { title: '结果分析', icon: 'monitor', keepAlive: false }
       }
     ]
   },

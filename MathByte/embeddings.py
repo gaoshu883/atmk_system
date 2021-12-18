@@ -21,7 +21,6 @@ class Embeddings:
         '''
         if version == 'baidu':
             model_file_path = 'file_data/sgns.target.word-character.char1-2.dynwin5.thr10.neg5.dim300.iter5'
-            print('start load model...')
             math_word2vec_model = KeyedVectors.load_word2vec_format(
                 model_file_path, binary=False)
             text_vec = math_word2vec_model.wv[query]
@@ -52,7 +51,6 @@ class Embeddings:
             'key': key,
             'content': query_formula
         }]
-        print(model_file_path, map_file_path)
         system = TangentCFTBackEnd(
             config_file=None, data_set=None, query_formulas=query_formulas)
         system.load_model(map_file_path=map_file_path,

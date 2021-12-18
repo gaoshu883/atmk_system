@@ -36,13 +36,21 @@ def clean_html(raw_html: str = '', id: int = 0):
     '''
     char_list = []
     word_list = []
-    text_list = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
-                       lambda matched: 'HELLO_WORLD', text).split('HELLO_WORLD')
+    char_formula_list = []
+    word_formula_list = []
+    text_list = re.split(r'(HEL_\d+_WLDOR_\d+_OL)', text)
     for u in text_list:
-        char_list.extend(cut_char(u))
-        word_list.extend(cut_word(u))
+        if u in math_dict:
+            # 公式不切分
+            char_formula_list.append(u)
+            word_formula_list.append(u)
+        else:
+            char_list.extend(cut_char(u))
+            word_list.extend(cut_word(u))
+            char_formula_list.extend(cut_char(u))
+            word_formula_list.extend(cut_word(u))
 
-    return text, math_dict, math_text, char_list, word_list
+    return text, math_dict, math_text, char_list, word_list, char_formula_list, word_formula_list
 
 
 def replace_formula(matched, formulas) -> str:

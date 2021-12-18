@@ -1,5 +1,5 @@
 <template>
-  <a-card title="数据预处理">
+  <a-card :loading="loading" title="向量查询">
     <p>题目：{{ demoData.text }}</p>
     <p>分字：{{ demoData.char_list }}</p>
     <p>分词：{{ demoData.word_list }}</p>
@@ -44,9 +44,10 @@
   import { downloadFile } from '@/utils/util'
   import { labelMixin } from '@/store/dataset-mixin'
   export default {
-    name: 'Preprocess',
+    name: 'PreTrainVec',
     data() {
       return {
+        loading: false,
         charVersion: 'atmk',
         wordVersion: 'atmk',
         demoData: {
@@ -94,6 +95,7 @@
     mixins: [labelMixin],
     methods: {
       getData() {
+        this.loading = true
         getCleanResult()
           .then((res) => {
             const data = res.data.demo_data
@@ -102,6 +104,9 @@
           })
           .catch((error) => {
             console.log(error, 'getCleanResult...')
+          })
+          .finally(() => {
+            this.loading = false
           })
       },
       getFormulaVector(record, version) {

@@ -1,5 +1,7 @@
 data: ''
 logF: ''
+text_embedding: ''
+formula_embedding: ''
 epoch: 20
 batch_size: 64
 optim: 'adam'
