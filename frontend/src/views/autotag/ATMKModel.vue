@@ -20,13 +20,22 @@
             <a-select-option value="wiki"> wiki </a-select-option>
           </a-select>
         </a-form-item>
-        <a-form-item>
+        <br />
+        <br />
+        <p>
           <a-button type="primary" @click="preprocess" :loading="loading">准备测试集、验证集、测试集</a-button>
-          <p>
-            数据集：<a-tag>{{ filenames.math_data }}</a-tag> 词表：<a-tag>{{ filenames.vocab_label }}</a-tag>
-            词向量：<a-tag>{{ filenames.embeddings }}</a-tag>
-          </p>
-        </a-form-item>
+          <a-input-search
+            v-model="vocab"
+            style="margin-left: 32px; width: 300px"
+            placeholder="请输入词汇"
+            enter-button="查询向量"
+            @search="onSearchVector"
+          />
+        </p>
+        <p>
+          数据集：<a-tag>{{ filenames.math_data }}</a-tag> 词表：<a-tag>{{ filenames.vocab_label }}</a-tag>
+          词向量：<a-tag>{{ filenames.embeddings }}</a-tag>
+        </p>
       </a-form>
     </a-card>
     <br />
@@ -36,12 +45,15 @@
   </div>
 </template>
 <script>
-  import { postDataPrecess } from '@/api/system'
+  import { postDataPrecess, getVectorByType } from '@/api/system'
+  import { downloadFile } from '@/utils/util'
+
   export default {
     name: 'ATMKModel',
     data() {
       return {
         loading: false,
+        vocab: '',
         textType: 'word',
         textVersion: 'atmk',
         formulaVersion: 'atmk',
@@ -66,6 +78,18 @@
           })
           .finally(() => {
             this.loading = false
+          })
+      },
+      onSearchVector() {
+        getVectorByType({
+          type: 'vocab',
+          value: this.vocab
+        })
+          .then((res) => {
+            downloadFile(JSON.stringify(res.data), `${this.vocab}.json`)
+          })
+          .catch((error) => {
+            console.log('getFormulaVector ...', error)
           })
       }
     },

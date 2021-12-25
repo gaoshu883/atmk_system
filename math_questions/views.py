@@ -300,7 +300,7 @@ def read_vector(request):
     value = data.get('value')
     version = data.get('version')
     result = {}
-    system = Embeddings()
+    system = Embeddings(CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS)
     if type_id == 'char':
         char_list = cut_char(value)  # 按字切分
         for char in char_list:
@@ -315,7 +315,7 @@ def read_vector(request):
         result[data.get('key')] = system.read_formula_vec(
             query_formula=value, version=version).tolist()
     else:
-        pass
+        result['vocab'] = system.get_vector_of_vocab(value).tolist()
 
     return response_success(data=result)
 

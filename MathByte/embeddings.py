@@ -1,3 +1,4 @@
+import pickle
 from gensim.models import Word2Vec, KeyedVectors
 
 from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
@@ -8,8 +9,9 @@ logging.basicConfig(
 
 
 class Embeddings:
-    def __init__(self, ) -> None:
-        pass
+    def __init__(self, cache_file_pickle=None, cache_embedding_file=None) -> None:
+        self.cache_file_pickle = cache_file_pickle
+        self.cache_embedding_file = cache_embedding_file
 
     def read_text_vec(self, type_id, query, version='atmk'):
         '''
@@ -90,3 +92,21 @@ class Embeddings:
         system.load_model(map_file_path=map_file_path,
                           model_file_path=model_file_path)
         return system.get_formula_vectors(query_formula)
+
+    def get_vector_of_vocab(self, vocab):
+        '''
+        根据词汇从 embeddings 中读取向量
+        :param vocab: 词汇在词汇表中的索引
+        '''
+        # 读取词表
+        vocab_pickle = open(self.cache_file_pickle, 'rb')
+        (word2index, a) = pickle.load(vocab_pickle)
+        vocab_pickle.close()
+        vocab2index = word2index[vocab]
+
+        # 读取词向量
+        embedding_pickle = open(self.cache_embedding_file, 'rb')
+        data_embedding = pickle.load(embedding_pickle)
+        embedding_pickle.close()
+
+        return data_embedding[vocab2index]
