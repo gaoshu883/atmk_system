@@ -1,7 +1,6 @@
-data: ''
-logF: ''
-text_embedding: ''
-formula_embedding: ''
+cache_file_h5py: '../file_data/math_data.h5'
+cache_file_pickle: '../file_data/vocab_label.pkl'
+emb_size: 300
 epoch: 20
 batch_size: 64
 optim: 'adam'
@@ -11,7 +10,6 @@ learning_rate: 0.0003
 max_grad_norm: 10
 learning_rate_decay: 0.5
 start_decay_at: 2
-emb_size: 300
 hidden_size: 512
 dec_num_layers: 3
 enc_num_layers: 3

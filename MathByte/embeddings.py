@@ -57,3 +57,36 @@ class Embeddings:
                           model_file_path=model_file_path)
         formula_vec = system.get_collection_query_vectors()[key]
         return formula_vec
+
+    def batch_read_text_vec(self, query_text, token_type, version):
+        '''批量读取字or词向量'''
+        math_word2vec_model = None
+        if version == 'baidu':
+            model_file_path = 'file_data/sgns.target.word-character.char1-2.dynwin5.thr10.neg5.dim300.iter5'
+            math_word2vec_model = KeyedVectors.load_word2vec_format(
+                model_file_path, binary=False)
+        else:
+            model_file_path = 'file_data/math_text_char.model'
+            if token_type == 'word':
+                model_file_path = 'file_data/math_text_word.model'
+            math_word2vec_model = Word2Vec.load(model_file_path)
+        ret = {}
+        for k, v in query_text.items():
+            try:
+                ret[k] = math_word2vec_model.wv[v]
+            except Exception:
+                ret[k] = None
+        return ret
+
+    def batch_read_formula_vec(self, query_formula, version):
+        '''批量读取公式向量'''
+        model_file_path = 'file_data/da-20k/slt_model'  # Model file path
+        map_file_path = 'file_data/da-20k/slt_encoder.tsv'
+        if version == 'wiki':
+            model_file_path = 'file_data/wiki-590k/slt_model'
+            map_file_path = 'file_data/wiki-590k/slt_encoder.tsv'
+        system = TangentCFTBackEnd(
+            config_file=None, data_set=None, query_formulas=None)
+        system.load_model(map_file_path=map_file_path,
+                          model_file_path=model_file_path)
+        return system.get_formula_vectors(query_formula)

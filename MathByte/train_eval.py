@@ -6,7 +6,6 @@ import torch.nn.functional as F
 from sklearn import metrics
 import time
 from utils import get_time_dif
-from tensorboardX import SummaryWriter
 
 
 # 权重初始化，默认xavier

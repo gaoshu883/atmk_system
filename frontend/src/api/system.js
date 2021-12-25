@@ -9,7 +9,8 @@ const systemApi = {
   DataSummary: '/math_questions/data_summary',
   ManualTag: '/math_questions/manual_tag',
   ManualCheck: '/math_questions/manual_check',
-  Preprocess: '/math_questions/preprocess'
+  Preprocess: '/math_questions/preprocess',
+  ParseFormula: '/math_questions/parse_formula'
 }
 
 export function getMathKnowledge() {
@@ -89,5 +90,14 @@ export function postDataPrecess(params) {
     method: 'post',
     data: params,
     timeout: 0
+  })
+}
+
+// 公式解析
+export function parseFormula(params) {
+  return request({
+    url: systemApi.ParseFormula,
+    method: 'post',
+    data: params
   })
 }

@@ -60,6 +60,22 @@ class TangentCFTBackEnd:
             query_vectors[query] = query_vec
         return query_vectors
 
+    def get_formula_tuples(self, ):
+        return self.data_reader.get_query()
+
+    def get_formula_vectors(self, formula_tuples, embedding_type=TupleTokenizationMode.Both_Separated, ignore_full_relative_path=True,
+                            tokenize_all=False, tokenize_number=True):
+        query_vectors = {}
+        for query in formula_tuples:
+            encoded_tuple_query = self.__encode_lst_tuples(formula_tuples[query], embedding_type,
+                                                           ignore_full_relative_path, tokenize_all, tokenize_number)
+            try:
+                query_vec = self.module.get_query_vector(encoded_tuple_query)
+                query_vectors[query] = query_vec
+            except Exception:
+                query_vectors[query] = None
+        return query_vectors
+
     def __encode_train_tuples(self, embedding_type, ignore_full_relative_path, tokenize_all, tokenize_number):
         """
         This methods read the collection queries in the dictionary of formula_id: tuple list and encodes the tuples according the criteria

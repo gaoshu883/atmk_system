@@ -26,19 +26,23 @@
         <span>（清洗时间~5min）</span>
       </p>
       <br />
-      <a-card title="示例" size="small">
+      <a-card title="示例" size="small" :loading="loading">
         <p>题目：{{ demoData.text }}</p>
         <p>
           知识点：<a-tag v-for="item in demoData.labels" :key="item">{{ getLabelName(item) }} </a-tag>
         </p>
-        <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns" />
+        <a-table :pagination="false" bordered :dataSource="demoData.formulas" :columns="columns">
+          <template slot="action" slot-scope="text, record">
+            <a href="javascript:;" @click="onClick(record)">解析</a>
+          </template>
+        </a-table>
       </a-card>
     </a-card>
   </div>
 </template>
 <script>
   /*  eslint-disable camelcase  */
-  import { getCleanResult, postCleanData } from '@/api/system'
+  import { getCleanResult, postCleanData, parseFormula } from '@/api/system'
   import { labelMixin } from '@/store/dataset-mixin'
   import moment from 'moment'
   export default {
@@ -46,6 +50,7 @@
     data() {
       return {
         pending: false,
+        loading: false,
         updatedAt: 'null',
         fileName: '暂无文件',
         tagNum: 5,
@@ -68,7 +73,7 @@
             key: 'value'
           },
           {
-            title: '解析',
+            title: '渲染',
             dataIndex: 'value',
             key: 'formula',
             width: '20%',
@@ -81,6 +86,12 @@
                 }}
               ></div>
             )
+          },
+          {
+            title: '操作',
+            dataIndex: 'action',
+            width: 150,
+            scopedSlots: { customRender: 'action' }
           }
         ]
       }
@@ -88,6 +99,7 @@
     mixins: [labelMixin],
     methods: {
       getData() {
+        this.loading = true
         getCleanResult()
           .then((res) => {
             const data = res.data
@@ -95,6 +107,9 @@
           })
           .catch((error) => {
             console.log(error, 'getCleanResult...')
+          })
+          .finally(() => {
+            this.loading = false
           })
       },
       cleanData() {
@@ -121,6 +136,24 @@
           demoData: { text, formulas: temp, labels: label_list },
           updatedAt: moment(data.updated_at * 1000).format('YYYY-MM-DD HH:mm:ss')
         })
+      },
+      onClick(record) {
+        parseFormula({
+          cond: [
+            {
+              key: record.key,
+              content: record.value
+            }
+          ]
+        })
+          .then((res) => {
+            this.$info({
+              content: JSON.stringify(res.data)
+            })
+          })
+          .catch((error) => {
+            console.log('parseFormula', error)
+          })
       }
     },
     created() {

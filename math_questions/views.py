@@ -4,13 +4,13 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL
+from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS
 
 from .utils import clean_html, remove_same, cut_word, cut_char
 
 from MathByte.embeddings import Embeddings
 from MathByte.preprocess import DataPreprocess
-
+from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
 
 import json
 import time
@@ -34,7 +34,7 @@ def questions(request):
             temp = model_to_dict(query)
             ret.append(temp['label_id'])
         u['labels'] = ret
-        u['clean_text'], a, b, c, d, e, f = clean_html(
+        u['clean_text'], a, b, c, d, e, f, u['formula_tuples'] = clean_html(
             u['text'], u['id'])
     return response_success(data={
         'data': data,
@@ -91,6 +91,9 @@ def clean(request):
             "label_list": [],
             "formulas": {
                 "HEL_45293_WLDOR_1_OL": "mathML"
+            },
+            "formula_tuples": {
+                "HEL_45293_WLDOR_1_OL": ["N!1\t0!\tn\twe", "M!()1x2\t0!\tn\t-"]
             }
         }
     ]
@@ -126,7 +129,8 @@ def clean(request):
             ret['label_list'] = label_list
             ret['text'], ret['formulas'], ret['math_text'], \
                 ret['char_list'], ret['word_list'], \
-                ret['char_formula_list'], ret['word_formula_list'] = clean_html(
+                ret['char_formula_list'], ret['word_formula_list'], \
+                ret['formula_tuples'] = clean_html(
                 u['text'], qid)
             # 确保字符数>=char_min
             if len(ret['char_list']) >= char_min:
@@ -264,15 +268,25 @@ def data_summary(request):
 def preprocess(request):
     '''
     准备训练集、验证集、测试集
-    准备词表（字+公式 or 词+公式）、标签表
+    准备词表（字+公式 or 词+公式）、预训练向量、标签表
 
     '''
     data = json.loads(request.body)
     text_type = data.get('text_type')
-    DataPreprocess(text_type, CACHE_FILE_PICKLE,
-                   CACHE_MATH_DATA, CACHE_VOCAB_LABEL)
+    text_version = data.get('text_version')
+    formula_version = data.get('formula_version')
 
-    return response_success(data={})
+    if not os.path.exists(CACHE_MATH_DATA) \
+        or not os.path.exists(CACHE_VOCAB_LABEL) \
+            or not os.path.exists(CACHE_EMNEDDINGS):
+        DataPreprocess(text_type, text_version, formula_version, CACHE_FILE_PICKLE,
+                       CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS)
+
+    return response_success(data={
+        'math_data': CACHE_MATH_DATA,
+        'vocab_label': CACHE_VOCAB_LABEL,
+        'embeddings': CACHE_EMNEDDINGS,
+    })
 
 
 @login_required
@@ -334,3 +348,16 @@ def check_same_label(request):
     except Exception as e:
         print(e)
         return response_success(data={})
+
+
+@login_required
+def read_encoded_tuple(request):
+    '''
+    读取数学公式解析编码后的元组
+    '''
+    data = json.loads(request.body)
+    cond = data.get('cond')
+    system = TangentCFTBackEnd(
+        config_file=None, data_set=None, query_formulas=cond)
+    formula_tuples = system.get_formula_tuples()
+    return response_success(data=formula_tuples)

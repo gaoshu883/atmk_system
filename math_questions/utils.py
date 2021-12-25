@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 import jieba
 import re
+from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
 
 
 def clean_html(raw_html: str = '', id: int = 0):
@@ -16,16 +17,21 @@ def clean_html(raw_html: str = '', id: int = 0):
     drop.extend(img_tag)
     for item in drop:
         item.decompose()
-    '''数学表达式替换-提取'''
+    '''数学表达式替换-提取-解析'''
     math_dict = {}
     for inx, tag in enumerate(soup.select('math')):
         key = 'HEL_%d_WLDOR_%d_OL' % (id, inx)
         math = tag.replace_with(key)
         math_dict[key] = str(math)
-    text = content.get_text()
+    query_formulas = [{'key': k, 'content': v} for k, v in math_dict.items()]
+    system = TangentCFTBackEnd(
+        config_file=None, data_set=None, query_formulas=query_formulas)
+    formula_tuples = system.get_formula_tuples()
+
     '''清除空格、序号、答案括号等字符'''
+    text = content.get_text()
     text = ''.join(text.split())  # 空格去不掉的解决方法
-    text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text)
+    # text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text)
     '''将模式替换成公式'''
     math_text = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
                        lambda matched: replace_formula(matched, math_dict), text)
@@ -50,7 +56,8 @@ def clean_html(raw_html: str = '', id: int = 0):
             char_formula_list.extend(cut_char(u))
             word_formula_list.extend(cut_word(u))
 
-    return text, math_dict, math_text, char_list, word_list, char_formula_list, word_formula_list
+    return text, math_dict, math_text, char_list, word_list, \
+        char_formula_list, word_formula_list, formula_tuples
 
 
 def replace_formula(matched, formulas) -> str:
