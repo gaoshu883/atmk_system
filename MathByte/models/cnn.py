@@ -2,18 +2,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from .base import BaseModel
 
-class Model(nn.Module):
+class Model(BaseModel):
     def __init__(self, config, use_attention=False):
-        super(Model, self).__init__()
-        if config.embedding_pretrained is not None:
-            self.embedding = nn.Embedding.from_pretrained(
-                config.embedding_pretrained, freeze=False)
-        else:
-            self.embedding = nn.Embedding(
-                config.n_vocab, config.embed, padding_idx=config.n_vocab - 1)
+        super(Model, self).__init__(config)
         self.convs = nn.ModuleList(
-            [nn.Conv2d(1, config.num_filters, (k, config.embed)) for k in config.filter_sizes])
+            [nn.Conv2d(1, config.num_filters, (k, config.emb_size)) for k in config.filter_sizes])
         self.dropout = nn.Dropout(config.dropout)
         self.fc = nn.Linear(config.num_filters *
                             len(config.filter_sizes), config.num_classes)

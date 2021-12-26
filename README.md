@@ -69,8 +69,16 @@ python train_model.py
 
 可视化操作见【ATMK研究平台-模型训练】页面，代码实现见： `MathByte\preprocess.py`
 
-数据文件：`file_data\math_data.h5` 和 `file_data\vocab_label.pkl`
+数据文件：`file_data\math_data.h5` 和 `file_data\vocab_label.pkl` 和 `file_data\embeddings.pkl`
 
+
+## 分类模型训练
+
+```bash
+cd MathByte
+python main.py -h # 查看命令参数
+python main.py
+```
 
 ## 鸣谢
 + [TangentCFT](https://github.com/BehroozMansouri/TangentCFT)

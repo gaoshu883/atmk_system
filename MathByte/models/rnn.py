@@ -6,9 +6,9 @@ from .base import BaseModel
 
 
 class Model(BaseModel):
-    def __init__(self, config):
+    def __init__(self, config, use_attention=False):
         super(Model, self).__init__(config)
-        self.lstm = nn.LSTM(config.embed, config.hidden_size, config.num_layers,
+        self.lstm = nn.LSTM(config.emb_size, config.hidden_size, config.num_layers,
                             bidirectional=True, batch_first=True, dropout=config.dropout)
         self.fc = nn.Linear(config.hidden_size * 2, config.num_classes)
 

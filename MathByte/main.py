@@ -7,7 +7,7 @@ import argparse
 import logging
 
 import utils
-from train_eval import train
+from train_eval import train, test
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,7 +18,7 @@ logging.basicConfig(
 
 parser = argparse.ArgumentParser(description='ATMK')
 parser.add_argument('--model', type=str, required=True,
-                    help='choose a model: cnn, rnn, transformer, bert')
+                    help='choose a model: cnn, rnn, transformer')
 parser.add_argument('--use_att', default=False, type=bool,
                     help='True for use label attention, False for not')
 parser.add_argument('--use_lcm', default=False, type=bool,
@@ -46,7 +46,6 @@ if __name__ == '__main__':
     word2index, label2index, trainX, trainY, vaildX, vaildY, testX, testY = utils.load_data(
         config.cache_file_h5py, config.cache_file_pickle)
 
-    data_package = [trainX, trainY, vaildX, vaildY, testX, testY]
     config.vocab_size = len(word2index)
     config.num_classes = len(label2index)
     num_examples, config.sentence_len = trainX.shape
@@ -56,4 +55,8 @@ if __name__ == '__main__':
 
     # train
     model = x.Model(config, args.use_att)
-    train(config, model, data_package, args.use_lcm)
+    for epoch in range(config.epochs):
+        logging.info('Epoch [{}/{}]'.format(epoch + 1, config.epochs))
+        train(config, model, [trainX, trainY, vaildX, vaildY], args.use_lcm)
+
+    test(config, model, [testX, testY])

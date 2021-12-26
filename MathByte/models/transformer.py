@@ -4,30 +4,22 @@ import torch.nn.functional as F
 import numpy as np
 import copy
 
+from .base import BaseModel
 
-class Model(nn.Module):
+
+class Model(BaseModel):
     def __init__(self, config, use_attention=False):
-        super(Model, self).__init__()
-        if config.embedding_pretrained is not None:
-            self.embedding = nn.Embedding.from_pretrained(
-                config.embedding_pretrained, freeze=False)
-        else:
-            self.embedding = nn.Embedding(
-                config.n_vocab, config.embed, padding_idx=config.n_vocab - 1)
-
+        super(Model, self).__init__(config)
         self.postion_embedding = Positional_Encoding(
-            config.embed, config.pad_size, config.dropout, config.device)
+            config.emb_size, config.sentence_len, config.dropout, config.device)
         self.encoder = Encoder(
             config.dim_model, config.num_head, config.hidden, config.dropout)
         self.encoders = nn.ModuleList([
             copy.deepcopy(self.encoder)
-            # Encoder(config.dim_model, config.num_head, config.hidden, config.dropout)
             for _ in range(config.num_encoder)])
 
         self.fc1 = nn.Linear(
-            config.pad_size * config.dim_model, config.num_classes)
-        # self.fc2 = nn.Linear(config.last_hidden, config.num_classes)
-        # self.fc1 = nn.Linear(config.dim_model, config.num_classes)
+            config.sentence_len * config.dim_model, config.num_classes)
 
     def forward(self, x):
         out = self.embedding(x[0])
@@ -35,7 +27,6 @@ class Model(nn.Module):
         for encoder in self.encoders:
             out = encoder(out)
         out = out.view(out.size(0), -1)
-        # out = torch.mean(out, 1)
         out = self.fc1(out)
         return out
 

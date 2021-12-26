@@ -100,7 +100,7 @@ class Embeddings:
         '''
         # 读取词表
         vocab_pickle = open(self.cache_file_pickle, 'rb')
-        (word2index, a) = pickle.load(vocab_pickle)
+        word2index, a = pickle.load(vocab_pickle)
         vocab_pickle.close()
         vocab2index = word2index[vocab]
 

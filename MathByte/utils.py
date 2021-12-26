@@ -46,3 +46,11 @@ def load_data(cache_file_h5py, cache_file_pickle):
     with open(cache_file_pickle, 'rb') as data_f_pickle:
         word2index, label2index = pickle.load(data_f_pickle)
     return word2index, label2index, train_X, train_Y, vaild_X, valid_Y, test_X, test_Y
+
+
+def load_embed_data(embedding_pickle):
+    '''加载预训练向量 narray'''
+    embeddings = None
+    with open(embedding_pickle, 'rb') as data_f_pickle:
+        embeddings = pickle.load(data_f_pickle)
+    return embeddings

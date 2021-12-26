@@ -315,7 +315,7 @@ def read_vector(request):
         result[data.get('key')] = system.read_formula_vec(
             query_formula=value, version=version).tolist()
     else:
-        result['vocab'] = system.get_vector_of_vocab(value).tolist()
+        result[value] = system.get_vector_of_vocab(value).tolist()
 
     return response_success(data=result)
 
