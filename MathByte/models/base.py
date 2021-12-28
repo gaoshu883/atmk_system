@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 import utils
+from .attention import LabelAttention
 
 
 class BaseModel(nn.Module):
@@ -9,6 +10,7 @@ class BaseModel(nn.Module):
         super(BaseModel, self).__init__()
         embeddings = utils.load_embed_data(config.embeddings)
         self.embedding = self._load_embeddings(embeddings)
+        self.label_att = LabelAttention()
 
     def _load_embeddings(self, embeddings):
         """Load the embeddings based on flag"""

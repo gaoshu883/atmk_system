@@ -7,6 +7,7 @@ from .base import BaseModel
 class Model(BaseModel):
     def __init__(self, config, use_attention=False):
         super(Model, self).__init__(config)
+        self.use_att = use_attention
         self.convs = nn.ModuleList(
             [nn.Conv2d(1, config.num_filters, (k, config.emb_size)) for k in config.filter_sizes])
         self.dropout = nn.Dropout(config.dropout)
@@ -24,5 +25,7 @@ class Model(BaseModel):
         out = torch.cat([self.conv_and_pool(out, conv)
                         for conv in self.convs], 1)
         out = self.dropout(out)
+        if self.use_att:
+            out = self.label_att(out, x[0])
         out = self.fc(out)
         return out

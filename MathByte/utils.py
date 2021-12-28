@@ -49,8 +49,8 @@ def load_data(cache_file_h5py, cache_file_pickle):
 
 
 def load_embed_data(embedding_pickle):
-    '''加载预训练向量 narray'''
+    '''加载预训练向量 narray2list'''
     embeddings = None
     with open(embedding_pickle, 'rb') as data_f_pickle:
         embeddings = pickle.load(data_f_pickle)
-    return embeddings
+    return embeddings.tolist()

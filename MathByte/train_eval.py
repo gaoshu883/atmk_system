@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from sklearn import metrics
 import time
 from utils import get_time_dif
+from models.lcm import LabelConfusionModel
 
 
 # 权重初始化，默认xavier
@@ -25,19 +26,23 @@ def init_network(model, method='xavier', exclude='embedding', seed=123):
                 pass
 
 
-def train(config, model, data_package, opt, use_lcm):
-    [train_iter, dev_iter] = data_package
+def train(config, model, data_package, opt, use_lcm=False):
+    [trainX, trainY, vaildX, vaildY] = data_package
     dev_best_loss = float('inf')
-    for i, (trains, labels) in enumerate(train_iter):
-        outputs = model(trains)
+    for i, item in enumerate(trainX):
+        outputs = model(item)
         model.zero_grad()
-        loss = F.cross_entropy(outputs, labels)
+        if use_lcm:
+            criterion = LabelConfusionModel()
+            loss = criterion(outputs, trainY[i])
+        else:
+            loss = F.cross_entropy(outputs, trainY[i])
         loss.backward()
         opt.step()
-        true = labels.data.cpu()
+        true = trainY[i].data.cpu()
         predic = torch.max(outputs.data, 1)[1].cpu()
         train_acc = metrics.accuracy_score(true, predic)
-        dev_acc, dev_loss = evaluate(config, model, dev_iter)
+        dev_acc, dev_loss = evaluate(config, model, vaildX, vaildY)
         if dev_loss < dev_best_loss:
             dev_best_loss = dev_loss
             torch.save(model.state_dict(), config.save_path)
@@ -47,13 +52,13 @@ def train(config, model, data_package, opt, use_lcm):
         model.train()
 
 
-def test(config, model, test_iter):
+def test(config, model, testX, testY):
     # test
     model.load_state_dict(torch.load(config.save_path))
     model.eval()
     start_time = time.time()
     test_acc, test_loss, test_report, test_confusion = evaluate(
-        config, model, test_iter, test=True)
+        config, model, testX, testY, test=True)
     msg = 'Test Loss: {0:>5.2},  Test Acc: {1:>6.2%}'
     print(msg.format(test_loss, test_acc))
     print("Precision, Recall and F1-Score...")
@@ -64,14 +69,15 @@ def test(config, model, test_iter):
     print("Time usage:", time_dif)
 
 
-def evaluate(config, model, data_iter, test=False):
+def evaluate(config, model, vaildX, vaildY, test=False):
     model.eval()
     loss_total = 0
     predict_all = np.array([], dtype=int)
     labels_all = np.array([], dtype=int)
     with torch.no_grad():
-        for texts, labels in data_iter:
-            outputs = model(texts)
+        for i, item in enumerate(vaildX):
+            labels = vaildY[i]
+            outputs = model(item)
             loss = F.cross_entropy(outputs, labels)
             loss_total += loss
             labels = labels.data.cpu().numpy()
@@ -84,5 +90,5 @@ def evaluate(config, model, data_iter, test=False):
         report = metrics.classification_report(
             labels_all, predict_all, target_names=config.class_list, digits=4)
         confusion = metrics.confusion_matrix(labels_all, predict_all)
-        return acc, loss_total / len(data_iter), report, confusion
-    return acc, loss_total / len(data_iter)
+        return acc, loss_total / len(vaildX), report, confusion
+    return acc, loss_total / len(vaildX)

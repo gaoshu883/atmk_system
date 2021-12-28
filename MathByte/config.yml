@@ -8,7 +8,7 @@ dropout: 0.1
 
 # lstm
 hidden_size: 512
-num_layers: 1
+num_layers: 3
 # textcnn
 num_filters: 250
 filter_sizes: (2, 3, 4)

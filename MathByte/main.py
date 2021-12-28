@@ -1,5 +1,4 @@
 # coding: UTF-8
-from django.contrib.auth.decorators import login_required
 import torch
 import numpy as np
 from importlib import import_module
@@ -59,4 +58,4 @@ if __name__ == '__main__':
         logging.info('Epoch [{}/{}]'.format(epoch + 1, config.epochs))
         train(config, model, [trainX, trainY, vaildX, vaildY], args.use_lcm)
 
-    test(config, model, [testX, testY])
+    test(config, model, testX, testY)

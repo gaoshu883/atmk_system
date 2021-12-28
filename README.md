@@ -71,6 +71,20 @@ python train_model.py
 
 数据文件：`file_data\math_data.h5` 和 `file_data\vocab_label.pkl` 和 `file_data\embeddings.pkl`
 
++ `file_data\math_data.h5` 存储的是字典
+```Python
+{
+    'train_X': [[1,12,233,10002,0.......]], # 一组序列编码，每个item是题目序列，序列长度100
+    'train_Y': [[1,1,0,1,0,0,........]], # 一组多热编码，每个item是题目的知识点集，标签总数？
+    'vaild_X': [[]], 
+    'valid_Y': [[]], 
+    'test_X': [[]],
+    'test_Y': [[]]
+}
+```
+
++ `file_data\vocab_label.pkl` 存储的是元祖`(word2index, label2index)`
++ `file_data\embeddings.pkl` 存储的是 narray 二维数组
 
 ## 分类模型训练
 

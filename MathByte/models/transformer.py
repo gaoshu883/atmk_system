@@ -10,6 +10,7 @@ from .base import BaseModel
 class Model(BaseModel):
     def __init__(self, config, use_attention=False):
         super(Model, self).__init__(config)
+        self.use_att = use_attention
         self.postion_embedding = Positional_Encoding(
             config.emb_size, config.sentence_len, config.dropout, config.device)
         self.encoder = Encoder(
@@ -27,6 +28,8 @@ class Model(BaseModel):
         for encoder in self.encoders:
             out = encoder(out)
         out = out.view(out.size(0), -1)
+        if self.use_att:
+            out = self.label_att(out, x[0])
         out = self.fc1(out)
         return out
 
