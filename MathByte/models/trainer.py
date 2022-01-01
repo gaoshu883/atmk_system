@@ -35,6 +35,7 @@ class LSTM_LCM_dynamic:
         每一轮train完，在val上测试，同时在test上测试
         """
         for i in range(epochs):
+            logging.info("Epoch %d starting...", i+1)
             if i < self.lcm_stop:
                 self.__lcm_train(data_package, i)
             else:

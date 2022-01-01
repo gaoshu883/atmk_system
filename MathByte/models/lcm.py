@@ -5,6 +5,7 @@ from keras.layers import Flatten, Dropout, Concatenate, Lambda, Multiply, Reshap
 import keras.backend as K
 
 from .multi_label_loss import MyLoss
+from .evaluation_metrics import precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
 
 
 class LabelConfusionModel(object):
@@ -28,6 +29,30 @@ class LabelConfusionModel(object):
             loss2 = K.categorical_crossentropy(simulated_y_true, pred_probs)
             return loss1+loss2
 
+        def lcm_precision_1k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return precision_1k(y_true, pred_probs)
+
+        def lcm_precision_3k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return precision_3k(y_true, pred_probs)
+
+        def lcm_precision_5k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return precision_5k(y_true, pred_probs)
+
+        def lcm_Ndcg_1k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return Ndcg_1k(y_true, pred_probs)
+
+        def lcm_Ndcg_3k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return Ndcg_3k(y_true, pred_probs)
+
+        def lcm_Ndcg_5k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return Ndcg_5k(y_true, pred_probs)
+
         label_input = Input(shape=(num_classes,), name='label_input')
         label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_emb1')(
             label_input)  # shape=(None, num_classes, wvdim)
@@ -48,6 +73,7 @@ class LabelConfusionModel(object):
         # compile；
         model = Model(
             inputs=[basic_model.inputs[0], label_input], outputs=concat_output)
-        model.compile(loss=lcm_loss, optimizer='adam')
+        model.compile(loss=lcm_loss, optimizer='adam', metrics=[
+            lcm_precision_1k, lcm_precision_3k, lcm_precision_5k, lcm_Ndcg_1k, lcm_Ndcg_3k, lcm_Ndcg_5k])
         model._get_distribution_strategy = lambda: None
         return model

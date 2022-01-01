@@ -10,16 +10,16 @@ import utils
 
 logging.basicConfig(
     level=logging.INFO,
-    filename='train.log',
-    filemode='a',
+    # filename='train.log',
+    # filemode='a',
     format='%(asctime)s : %(levelname)s : %(message)s',
 )
 
 parser = argparse.ArgumentParser(description='ATMK')
 parser.add_argument('--use_att', default=False, type=bool,
-                    help='True for use label attention, False for not')
+                    help='True for use label attention')
 parser.add_argument('--use_lcm', default=False, type=bool,
-                    help='True for use label confusion model, False for not')
+                    help='True for use label confusion model')
 parser.add_argument('--config', default='config.yml', type=str,
                     help='config file')
 args = parser.parse_args()
