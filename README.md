@@ -92,6 +92,7 @@ python train_model.py
 cd MathByte
 python classification.py -h # 查看命令参数
 python classification.py
+python classification.py --use_lcm True # 使用 label confusion model
 ```
 
 ## 鸣谢
