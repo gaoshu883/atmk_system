@@ -1,15 +1,53 @@
-import torch
-import torch.nn as nn
-import torch.nn.functional as F
+import keras
+from keras.models import Model
+from keras.layers import Input, Dense, LSTM, Embedding
+from keras.layers import Flatten, Dropout, Concatenate, Lambda, Multiply, Reshape, Dot, Bidirectional
+import keras.backend as K
+
+from .multi_label_loss import MyLoss
 
 
-class LabelConfusionModel(nn.Module):
-    def __init__(self, config):
-        super().__init__()
-        self.num_classes = config.num_classes
-        self.e = 0.1
+class LabelConfusionModel(object):
+    """
+    分类器
+    """
+    @classmethod
+    def build(self, config, basic_model, text_h_state):
+        maxlen = config.maxlen
+        alpha = config.alpha
+        wvdim = config.emb_size
+        hidden_size = config.hidden_size
+        num_classes = config.num_classes
 
-    def forward(self, y_true, y_pred):
-        loss1 = F.cross_entropy(y_true, y_pred)
-        loss2 = F.cross_entropy(y_pred/self.num_classes, y_pred)
-        return (1-self.e)*loss1 + self.e*loss2
+        def lcm_loss(y_true, y_pred, alpha=alpha):
+            pred_probs = y_pred[:, :num_classes]
+            label_sim_dist = y_pred[:, num_classes:]
+            simulated_y_true = K.softmax(label_sim_dist+alpha*y_true)
+            loss1 = - \
+                K.categorical_crossentropy(simulated_y_true, simulated_y_true)
+            loss2 = K.categorical_crossentropy(simulated_y_true, pred_probs)
+            return loss1+loss2
+
+        label_input = Input(shape=(num_classes,), name='label_input')
+        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_emb1')(
+            label_input)  # shape=(None, num_classes, wvdim)
+        # 乘2是因为text用的BiLSTM
+        label_emb = Dense(hidden_size*2, activation='tanh',
+                          name='label_emb2')(label_emb)  # shape=(None, num_classes, hidden_size*2)
+        # similarity part:
+        # (num_classes,hidden_size*2) dot (hidden_size*2,1) --> (num_classes,1)
+        text_h_state = basic_model.layers[-1].input  # 取text最后一层的输入
+        doc_product = Dot(axes=(2, 1))(
+            [label_emb, text_h_state])  # shape=(None, num_classes)
+        # 标签模拟分布
+        label_sim_dict = Dense(
+            num_classes, activation='softmax', name='label_sim_dict')(doc_product)
+        # concat output:
+        # shape=(None, text_d+label_d)
+        concat_output = Concatenate()([basic_model.outputs[0], label_sim_dict])
+        # compile；
+        model = Model(
+            inputs=[basic_model.inputs[0], label_input], outputs=concat_output)
+        model.compile(loss=lcm_loss, optimizer='adam')
+        model._get_distribution_strategy = lambda: None
+        return model

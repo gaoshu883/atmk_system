@@ -90,11 +90,12 @@ python train_model.py
 
 ```bash
 cd MathByte
-python main.py -h # 查看命令参数
-python main.py
+python classification.py -h # 查看命令参数
+python classification.py
 ```
 
 ## 鸣谢
 + [TangentCFT](https://github.com/BehroozMansouri/TangentCFT)
 + [Embedding/Chinese-Word-Vectors](https://github.com/Embedding/Chinese-Word-Vectors)
 + [brightmart/text_classification](https://github.com/brightmart/text_classification)
++ [EMNLP2019LSAN/LSAN](https://github.com/EMNLP2019LSAN/LSAN/)

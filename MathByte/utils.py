@@ -14,7 +14,7 @@ class AttrDict(dict):
 
 
 def read_config(path):
-    return AttrDict(yaml.safe_load(open(path, 'r')))
+    return AttrDict(yaml.safe_load(open(path, 'r', encoding='utf-8')))
 
 
 def get_time_dif(start_time):
@@ -35,12 +35,14 @@ def load_data(cache_file_h5py, cache_file_pickle):
         raise RuntimeError("############################ERROR##############################\n. "
                            "请先准备训练集、验证集、测试集")
     f_data = h5py.File(cache_file_h5py, 'r')
-    train_X = f_data['train_X']  # np.array(
-    train_Y = f_data['train_Y']  # np.array(
-    vaild_X = f_data['vaild_X']  # np.array(
-    valid_Y = f_data['valid_Y']  # np.array(
-    test_X = f_data['test_X']  # np.array(
-    test_Y = f_data['test_Y']  # np.array(
+    # return narray
+    # https://stackoverflow.com/questions/46733052/read-hdf5-file-into-numpy-array
+    train_X = f_data['train_X'][()]
+    train_Y = f_data['train_Y'][()]
+    vaild_X = f_data['vaild_X'][()]
+    valid_Y = f_data['valid_Y'][()]
+    test_X = f_data['test_X'][()]
+    test_Y = f_data['test_Y'][()]
 
     word2index, label2index = None, None
     with open(cache_file_pickle, 'rb') as data_f_pickle:
@@ -49,8 +51,8 @@ def load_data(cache_file_h5py, cache_file_pickle):
 
 
 def load_embed_data(embedding_pickle):
-    '''加载预训练向量 narray2list'''
+    '''加载预训练向量 narray'''
     embeddings = None
     with open(embedding_pickle, 'rb') as data_f_pickle:
         embeddings = pickle.load(data_f_pickle)
-    return embeddings.tolist()
+    return embeddings
