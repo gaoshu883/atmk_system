@@ -37,6 +37,7 @@ class Classifier(object):
             # shape=(None, num_classes, hidden_size)
             label_emb = Embedding(num_classes, hidden_size, input_length=num_classes, name='label_x_emb')(
                 label_input)
+            time_steps = K.int_shape(lstm_output)[1]
             # keras 的Permute与tensorflow 的tf.transpose相同作用
             # K.batch_dot不是对层进行的操作，需要用Lambda进行封装
             # NOTE 总之数学运算都需要用Lambda进行封装
@@ -48,12 +49,15 @@ class Classifier(object):
                 *x))([label_emb, Permute((2, 1))(h1)])
             m2 = Lambda(lambda x: K.batch_dot(
                 *x))([label_emb, Permute((2, 1))(h2)])
+            m1_probs = Dense(time_steps, activation='softmax')(m1)
+            m2_probs = Dense(time_steps, activation='softmax')(m2)
             # # shape=(None, 427, 1024)
-            label_att = Concatenate(axis=2)(
-                [Lambda(lambda x: K.batch_dot(*x))([m1, h1]),
-                 Lambda(lambda x: K.batch_dot(*x))([m2, h2])])
+            label_att_mul = Concatenate(axis=2)(
+                [Lambda(lambda x: K.batch_dot(*x))([m1_probs, h1]),
+                 Lambda(lambda x: K.batch_dot(*x))([m2_probs, h2])])
             # shape=(None, hidden_size * 2)
-            lstm_output = Lambda(lambda x: K.sum(x, 1)/num_classes)(label_att)
+            lstm_output = Lambda(lambda x: K.sum(
+                x, 1)/num_classes)(label_att_mul)
 
         pred_probs = Dense(num_classes, activation='softmax',
                            name='pred_probs')(lstm_output)
