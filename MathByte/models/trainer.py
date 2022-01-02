@@ -1,6 +1,5 @@
 # checked at 2020.9.14
 import numpy as np
-import time
 import keras
 import logging
 
@@ -30,45 +29,41 @@ class LSTM_LCM_dynamic:
             log_dir=log_dir)
         self.callbacks = [tensorboard]
 
-    def train_val(self, data_package, epochs):
+    def train_val(self, data_package, epochs, initial_labels):
         """实验说明：
         每一轮train完，在val上测试，同时在test上测试
         """
         for i in range(epochs):
             logging.info("Epoch %d starting...", i+1)
             if i < self.lcm_stop:
-                self.__lcm_train(data_package, i)
+                self.__lcm_train(data_package, initial_labels, i)
             else:
-                self.__basic_train(data_package, i)
+                self.__basic_train(data_package, initial_labels, i)
         return None
 
-    def __basic_train(self, data_package, epoch_idx):
+    def __basic_train(self, data_package, label_data, epoch_idx):
         X_train, y_train, X_val, y_val, X_test, y_test = data_package
+        L_train, L_val, L_test = label_data
         # 训练阶段会自动记录每batch指标数据
-        self.basic_model.fit(X_train, y_train,
+        self.basic_model.fit([X_train, L_train], y_train,
                              batch_size=self.batch_size, verbose=1, epochs=1, callbacks=self.callbacks)  # verbose=1 log 进度条
         # 验证集上实验
-        pred_probs = self.basic_model.predict(X_val)  # (样本数量, num_classes)
+        # (样本数量, num_classes)
+        pred_probs = self.basic_model.predict([X_val, L_val])
         logging.info('(Orig)Epoch %d | Validate', epoch_idx+1)
         my_evaluator(y_val, pred_probs)
 
         # 测试集上实验
-        pred_probs = self.basic_model.predict(X_test)
+        pred_probs = self.basic_model.predict([X_test, L_test])
         logging.info('(Orig)Epoch %d | Test', epoch_idx+1)
         my_evaluator(y_test, pred_probs)
 
-    def __lcm_train(self, data_package, epoch_idx):
+    def __lcm_train(self, data_package, label_data, epoch_idx):
         '''
         利用label-confusion-matrix训练模型
-        需要初始化模拟标签数据（L_train,L_val,L_test）
         '''
         X_train, y_train, X_val, y_val, X_test, y_test = data_package
-        L_train = np.array([np.array(range(self.num_classes))
-                           for i in range(len(X_train))])
-        L_val = np.array([np.array(range(self.num_classes))
-                         for i in range(len(X_val))])
-        L_test = np.array([np.array(range(self.num_classes))
-                          for i in range(len(X_test))])
+        L_train, L_val, L_test = label_data
         self.model.fit([X_train, L_train], y_train,
                        batch_size=self.batch_size, verbose=1, epochs=1, callbacks=self.callbacks)
         # 验证集

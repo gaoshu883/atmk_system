@@ -53,12 +53,12 @@ class LabelConfusionModel(object):
             pred_probs = y_pred[:, :num_classes]
             return Ndcg_5k(y_true, pred_probs)
 
-        label_input = Input(shape=(num_classes,), name='label_input')
-        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_emb1')(
+        label_input = Input(shape=(num_classes,), name='label_lcm')
+        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_lcm_emb1')(
             label_input)  # shape=(None, num_classes, wvdim)
         # 乘2是因为text用的BiLSTM
         label_emb = Dense(hidden_size*2, activation='tanh',
-                          name='label_emb2')(label_emb)  # shape=(None, num_classes, hidden_size*2)
+                          name='label_lcm_emb2')(label_emb)  # shape=(None, num_classes, hidden_size*2)
         # similarity part:
         # (num_classes,hidden_size*2) dot (hidden_size*2,1) --> (num_classes,1)
         text_h_state = basic_model.layers[-1].input  # 取text最后一层的输入
