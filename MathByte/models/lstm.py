@@ -63,12 +63,12 @@ class Classifier(object):
             lstm_output = Lambda(lambda x: K.sum(
                 x, 1)/num_classes)(label_att_mul)
 
-        pred_probs = Dense(num_classes, activation='softmax',
+        pred_probs = Dense(num_classes, activation='sigmoid',
                            name='pred_probs')(lstm_output)
 
         model = Model(inputs=[text_input, label_input], outputs=pred_probs)
         # 每一批次评估一次
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=[
+        model.compile(loss='binary_crossentropy', optimizer='adam', metrics=[
                            precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k])  # 自定义评价函数
         model._get_distribution_strategy = lambda: None  # fix bug for 2.1 tensorboard
         print(model.summary())

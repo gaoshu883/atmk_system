@@ -7,4 +7,4 @@ epochs: 40
 batch_size: 512 # 批处理尺寸, 感觉原则上越大越好,尤其是样本不均衡的时候, batch_size设置影响比较大
 alpha: 4 # new model 的 loss 中的 alpha
 hidden_size: 512 # lstm
-lcm_stop: 30
+lcm_stop: 50
