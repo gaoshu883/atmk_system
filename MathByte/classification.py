@@ -46,6 +46,7 @@ if __name__ == '__main__':
         data_package = [trainX, trainY, vaildX, vaildY, testX, testY]
         '''
         初始化模拟标签数据（L_train,L_val,L_test）
+        shape=(None,num_classes)
         [[  0   1   2 ... 424 425 426]
          [  0   1   2 ... 424 425 426]
          [  0   1   2 ... 424 425 426]

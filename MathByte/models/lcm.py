@@ -13,7 +13,7 @@ class LabelConfusionModel(object):
     分类器
     """
     @classmethod
-    def build(self, config, basic_model, text_h_state):
+    def build(self, config, basic_model, text_h_state, label_emb):
         maxlen = config.maxlen
         alpha = config.alpha
         wvdim = config.emb_size
@@ -53,27 +53,26 @@ class LabelConfusionModel(object):
             pred_probs = y_pred[:, :num_classes]
             return Ndcg_5k(y_true, pred_probs)
 
-        label_input = Input(shape=(num_classes,), name='label_lcm')
-        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_lcm_emb1')(
-            label_input)  # shape=(None, num_classes, wvdim)
         # 乘2是因为text用的BiLSTM
-        label_emb = Dense(hidden_size*2, activation='tanh',
-                          name='label_lcm_emb2')(label_emb)  # shape=(None, num_classes, hidden_size*2)
+        label_lcm_emb = Dense(hidden_size*2, activation='tanh',
+                              name='label_lcm_emb')(label_emb)  # shape=(None, num_classes, hidden_size*2)
         # similarity part:
         # (num_classes,hidden_size*2) dot (hidden_size*2,1) --> (num_classes,1)
         text_h_state = basic_model.layers[-1].input  # 取text最后一层的输入
         doc_product = Dot(axes=(2, 1))(
-            [label_emb, text_h_state])  # shape=(None, num_classes)
+            [label_lcm_emb, text_h_state])  # shape=(None, num_classes)
         # 标签模拟分布
         label_sim_dict = Dense(
             num_classes, activation='softmax', name='label_sim_dict')(doc_product)
         # concat output:
         # shape=(None, text_d+label_d)
         concat_output = Concatenate()([basic_model.outputs[0], label_sim_dict])
+
         # compile；
         model = Model(
-            inputs=[basic_model.inputs[0], label_input], outputs=concat_output)
+            inputs=basic_model.inputs, outputs=concat_output)
         model.compile(loss=lcm_loss, optimizer='adam', metrics=[
             lcm_precision_1k, lcm_precision_3k, lcm_precision_5k, lcm_Ndcg_1k, lcm_Ndcg_3k, lcm_Ndcg_5k])
         model._get_distribution_strategy = lambda: None
+        print(model.summary())
         return model

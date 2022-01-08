@@ -88,3 +88,4 @@ local_settings.py
 db.sqlite3
 file_data/*
 logs/
+.vscode

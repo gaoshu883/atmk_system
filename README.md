@@ -93,6 +93,7 @@ cd MathByte
 python classification.py -h # 查看命令参数
 python classification.py
 python classification.py --use_lcm True # 使用 label confusion model
+python classification.py --use_att True # 使用 label attention
 ```
 
 ## 鸣谢

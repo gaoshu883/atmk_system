@@ -18,12 +18,12 @@ class LSTM_LCM_dynamic:
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
         self.lcm_stop = 0  # 默认不加 lcm
-        self.basic_model, hid = Classifier.build(
+        self.basic_model, hid, label_emb = Classifier.build(
             config, text_embedding_matrix, use_att)
         if use_lcm:
             self.lcm_stop = config.lcm_stop
             self.model = LabelConfusionModel.build(
-                config, self.basic_model, hid)
+                config, self.basic_model, hid, label_emb)
         # 设置训练过程中的回调函数
         tensorboard = keras.callbacks.TensorBoard(
             log_dir=log_dir)

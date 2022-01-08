@@ -32,11 +32,15 @@ class Classifier(object):
         # shape=(None, maxlen, hidden_size * 2) or shape=(None, hidden_size * 2)
         lstm_output = Bidirectional(LSTM(hidden_size, return_sequences=use_att))(
             input_emb)
-        label_input = Input(shape=(num_classes,), name='label_x')
+        # 标签
+        label_input = Input(shape=(num_classes,), name='label_input')
+        # shape=(None, num_classes, wvdim)
+        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_emb')(
+            label_input)
         if use_att:  # 标签注意力
-            # shape=(None, num_classes, hidden_size)
-            label_emb = Embedding(num_classes, hidden_size, input_length=num_classes, name='label_x_emb')(
-                label_input)
+            # shape=(None, hidden_size)
+            label_att_emb = Dense(hidden_size, activation='tanh',
+                                  name='label_att_emb')(label_emb)  # shape=(None, num_classes, hidden_size*2)
             time_steps = K.int_shape(lstm_output)[1]
             # keras 的Permute与tensorflow 的tf.transpose相同作用
             # K.batch_dot不是对层进行的操作，需要用Lambda进行封装
@@ -46,9 +50,9 @@ class Classifier(object):
             h2 = Lambda(lambda x: x[:, :, hidden_size:],
                         name="b_h")(lstm_output)
             m1 = Lambda(lambda x: K.batch_dot(
-                *x))([label_emb, Permute((2, 1))(h1)])
+                *x))([label_att_emb, Permute((2, 1))(h1)])
             m2 = Lambda(lambda x: K.batch_dot(
-                *x))([label_emb, Permute((2, 1))(h2)])
+                *x))([label_att_emb, Permute((2, 1))(h2)])
             m1_probs = Dense(time_steps, activation='softmax')(m1)
             m2_probs = Dense(time_steps, activation='softmax')(m2)
             # # shape=(None, 427, 1024)
@@ -68,4 +72,4 @@ class Classifier(object):
                            precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k])  # 自定义评价函数
         model._get_distribution_strategy = lambda: None  # fix bug for 2.1 tensorboard
         print(model.summary())
-        return model, lstm_output
+        return model, lstm_output, label_emb
