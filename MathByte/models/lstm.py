@@ -5,7 +5,7 @@ from keras.layers import Flatten, Concatenate, Permute, Lambda, Dot
 import keras.backend as K
 
 from .multi_label_loss import MyLoss
-from .evaluation_metrics import precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
+from .evaluation_metrics import precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
 
 
 class Classifier(object):
@@ -69,7 +69,7 @@ class Classifier(object):
         model = Model(inputs=[text_input, label_input], outputs=pred_probs)
         # 每一批次评估一次
         model.compile(loss='binary_crossentropy', optimizer='adam', metrics=[
-                           precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k])  # 自定义评价函数
+                           precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k])  # 自定义评价函数
         model._get_distribution_strategy = lambda: None  # fix bug for 2.1 tensorboard
         print(model.summary())
         return model, lstm_output, label_emb

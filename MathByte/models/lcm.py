@@ -5,7 +5,7 @@ from keras.layers import Flatten, Dropout, Concatenate, Lambda, Multiply, Reshap
 import keras.backend as K
 
 from .multi_label_loss import MyLoss
-from .evaluation_metrics import precision_1k, precision_3k, precision_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
+from .evaluation_metrics import precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
 
 
 class LabelConfusionModel(object):
@@ -41,6 +41,30 @@ class LabelConfusionModel(object):
             pred_probs = y_pred[:, :num_classes]
             return precision_5k(y_true, pred_probs)
 
+        def lcm_recall_1k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return recall_1k(y_true, pred_probs)
+
+        def lcm_recall_3k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return recall_3k(y_true, pred_probs)
+
+        def lcm_recall_5k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return recall_5k(y_true, pred_probs)
+
+        def lcm_f1_1k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return F1_1k(y_true, pred_probs)
+
+        def lcm_f1_3k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return F1_3k(y_true, pred_probs)
+
+        def lcm_f1_5k(y_true, y_pred):
+            pred_probs = y_pred[:, :num_classes]
+            return F1_5k(y_true, pred_probs)
+
         def lcm_Ndcg_1k(y_true, y_pred):
             pred_probs = y_pred[:, :num_classes]
             return Ndcg_1k(y_true, pred_probs)
@@ -72,7 +96,7 @@ class LabelConfusionModel(object):
         model = Model(
             inputs=basic_model.inputs, outputs=concat_output)
         model.compile(loss=lcm_loss, optimizer='adam', metrics=[
-            lcm_precision_1k, lcm_precision_3k, lcm_precision_5k, lcm_Ndcg_1k, lcm_Ndcg_3k, lcm_Ndcg_5k])
+            lcm_precision_1k, lcm_precision_3k, lcm_precision_5k, lcm_recall_1k, lcm_recall_3k, lcm_recall_5k, lcm_f1_1k, lcm_f1_3k, lcm_f1_5k, lcm_Ndcg_1k, lcm_Ndcg_3k, lcm_Ndcg_5k])
         model._get_distribution_strategy = lambda: None
         print(model.summary())
         return model

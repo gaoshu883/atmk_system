@@ -17,6 +17,8 @@ class LSTM_LCM_dynamic:
     def __init__(self, config, text_embedding_matrix=None, use_att=False, use_lcm=False, log_dir=None):
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
+        self.use_att = use_att
+        self.use_lcm = use_lcm
         self.lcm_stop = 0  # 默认不加 lcm
         self.basic_model, hid, label_emb = Classifier.build(
             config, text_embedding_matrix, use_att)
@@ -58,6 +60,9 @@ class LSTM_LCM_dynamic:
         logging.info('(Orig)Epoch %d | Test', epoch_idx+1)
         my_evaluator(y_test, pred_probs)
 
+        # 保存模型
+        self._save_model()
+
     def __lcm_train(self, data_package, label_data, epoch_idx):
         '''
         利用label-confusion-matrix训练模型
@@ -76,3 +81,17 @@ class LSTM_LCM_dynamic:
             :, :self.num_classes]
         logging.info('(LCM)Epoch %d | Test', epoch_idx+1)
         my_evaluator(y_test, pred_probs)
+
+        # 保存模型
+        self._save_model()
+
+    def _save_model(self, ):
+        logging.info("Save model...")
+        if self.use_lcm and self.use_att:
+            self.model.save('best_model_labs.h5')
+        elif self.use_lcm:
+            self.model.save('best_model_lbs.h5')
+        elif self.use_att:
+            self.basic_model.save('best_model_lab.h5')
+        else:
+            self.basic_model.save('best_model_b.h5')
