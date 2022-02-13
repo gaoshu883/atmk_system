@@ -57,7 +57,7 @@ def Ndcg_5k(y_true, y_pred):
 def my_evaluator(y_true, y_pred):
     logging.info("precision@1 : %.4f , precision@3 : %.4f , precision@5 : %.4f " %
                  (precision_1k(y_true, y_pred), precision_3k(y_true, y_pred), precision_5k(y_true, y_pred)))
-    logging.info("recall@1 : %.4f , f1@3 : %.4f , f1@5 : %.4f " %
+    logging.info("recall@1 : %.4f , recall@3 : %.4f , recall@5 : %.4f " %
                  (recall_1k(y_true, y_pred), recall_3k(y_true, y_pred), recall_5k(y_true, y_pred)))
     logging.info("f1@1 : %.4f ,f1@3 : %.4f , f1@5 : %.4f " %
                  (F1_1k(y_true, y_pred), F1_3k(y_true, y_pred), F1_5k(y_true, y_pred)))
