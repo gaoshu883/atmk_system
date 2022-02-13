@@ -13,5 +13,6 @@ urlpatterns = [
     path('parse_formula', views.read_encoded_tuple, name='parse formula'),
     path('preprocess', views.preprocess, name='data preprocess'),
     path('manual_tag', views.tag, name='manual tag'),
-    path('manual_check', views.check_same_label, name='manual check')
+    path('manual_check', views.check_same_label, name='manual check'),
+    path('clean_item', views.clean_item, name="clean user input")
 ]

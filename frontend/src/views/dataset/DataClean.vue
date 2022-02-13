@@ -26,6 +26,17 @@
         <span>（清洗时间~5min）</span>
       </p>
       <br />
+      <a-card>
+        <p>输入试题：</p>
+        <a-textarea v-model="content" :rows="8" />
+        <br />
+        <br />
+        <a-button @click="onSubmit">提交</a-button>
+        <br />
+        <br />
+        <div>{{ result }}</div>
+      </a-card>
+      <br />
       <a-card title="示例" size="small" :loading="loading">
         <p>题目：{{ demoData.text }}</p>
         <p>
@@ -42,7 +53,7 @@
 </template>
 <script>
   /*  eslint-disable camelcase  */
-  import { getCleanResult, postCleanData, parseFormula } from '@/api/system'
+  import { getCleanResult, postCleanData, parseFormula, cleanUserInput } from '@/api/system'
   import { labelMixin } from '@/store/dataset-mixin'
   import moment from 'moment'
   export default {
@@ -93,7 +104,9 @@
             width: 150,
             scopedSlots: { customRender: 'action' }
           }
-        ]
+        ],
+        content: '',
+        result: {}
       }
     },
     mixins: [labelMixin],
@@ -153,6 +166,15 @@
           })
           .catch((error) => {
             console.log('parseFormula', error)
+          })
+      },
+      onSubmit() {
+        cleanUserInput({ content: this.content })
+          .then((res) => {
+            this.result = res.data
+          })
+          .catch((error) => {
+            console.log('cleanUserInput', error)
           })
       }
     },

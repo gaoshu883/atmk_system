@@ -361,3 +361,19 @@ def read_encoded_tuple(request):
         config_file=None, data_set=None, query_formulas=cond)
     formula_tuples = system.get_formula_tuples()
     return response_success(data=formula_tuples)
+
+
+@login_required
+@require_POST
+def clean_item(request):
+    '''
+    清洗用户输入的试题文本
+    '''
+    data = json.loads(request.body)
+    html = data.get('content')
+    ret = {}
+    ret['text'], ret['formulas'], ret['math_text'], \
+        ret['char_list'], ret['word_list'], \
+        ret['char_formula_list'], ret['word_formula_list'], \
+        ret['formula_tuples'] = clean_html(html, 1)
+    return response_success(data=ret)

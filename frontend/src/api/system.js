@@ -10,7 +10,8 @@ const systemApi = {
   ManualTag: '/math_questions/manual_tag',
   ManualCheck: '/math_questions/manual_check',
   Preprocess: '/math_questions/preprocess',
-  ParseFormula: '/math_questions/parse_formula'
+  ParseFormula: '/math_questions/parse_formula',
+  CleanItem: '/math_questions/clean_item'
 }
 
 export function getMathKnowledge() {
@@ -97,6 +98,15 @@ export function postDataPrecess(params) {
 export function parseFormula(params) {
   return request({
     url: systemApi.ParseFormula,
+    method: 'post',
+    data: params
+  })
+}
+
+// 清洗用户输入的试题
+export function cleanUserInput(params) {
+  return request({
+    url: systemApi.CleanItem,
     method: 'post',
     data: params
   })
