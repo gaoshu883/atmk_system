@@ -28,6 +28,7 @@ if __name__ == '__main__':
     # 加载配置文件
     logging.info("Loading config...")
     config = utils.read_config(args.config)
+    logging.info(config)
     # 加载数据
     logging.info("Loading data...")
     word2index, label2index, trainX, trainY, vaildX, vaildY, testX, testY = utils.load_data(

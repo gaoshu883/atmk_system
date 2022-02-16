@@ -10,6 +10,15 @@
           <li>没有标签的题目</li>
           <li>重复的题目</li>
           <li>数学表达式用特殊模式替换，提供模式与数学表达式的映射</li>
+          <li>同时切字、词、公式</li>
+          <li>
+            如何切公式
+            <a-select v-model="formulaType">
+              <a-select-option :value="1"> 整体处置 </a-select-option>
+              <a-select-option :value="2">按纯文本处置</a-select-option>
+              <a-select-option :value="3">过滤公式</a-select-option>
+            </a-select>
+          </li>
           <li>清洗掉标记数少于 <a-input-number v-model="tagNum" :min="0" /> 的知识点</li>
           <li>清洗掉字符数少于 <a-input-number v-model="charNum" :min="0" /> 的题目</li>
         </ul>
@@ -31,7 +40,7 @@
         <a-textarea v-model="content" :rows="8" />
         <br />
         <br />
-        <a-button @click="onSubmit">提交</a-button>
+        <a-button @click="onCleanItem">提交</a-button>
         <br />
         <br />
         <div>{{ result }}</div>
@@ -64,6 +73,7 @@
         loading: false,
         updatedAt: 'null',
         fileName: '暂无文件',
+        formulaType: 1,
         tagNum: 5,
         charNum: 5,
         demoData: {
@@ -129,7 +139,8 @@
         this.pending = true
         postCleanData({
           tag_min: this.tagNum,
-          char_min: this.charNum
+          char_min: this.charNum,
+          formula_cut_type: this.formulaType
         })
           .then((res) => {
             this.parseData(res.data)
@@ -168,8 +179,8 @@
             console.log('parseFormula', error)
           })
       },
-      onSubmit() {
-        cleanUserInput({ content: this.content })
+      onCleanItem() {
+        cleanUserInput({ content: this.content, formula_cut_type: this.formulaType })
           .then((res) => {
             this.result = res.data
           })

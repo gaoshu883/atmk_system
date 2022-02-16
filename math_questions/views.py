@@ -101,6 +101,7 @@ def clean(request):
     data = json.loads(request.body)
     tag_min = data.get('tag_min')
     char_min = data.get('char_min')
+    formula_cut_type = data.get('formula_cut_type')
 
     # 先拿出来有效的标签数据（标记数>=tag_min）
     effect_label_list = []
@@ -131,7 +132,7 @@ def clean(request):
                 ret['char_list'], ret['word_list'], \
                 ret['char_formula_list'], ret['word_formula_list'], \
                 ret['formula_tuples'] = clean_html(
-                u['text'], qid)
+                u['text'], qid, formula_cut_type)
             # 确保字符数>=char_min
             if len(ret['char_list']) >= char_min:
                 temp.append(ret)
@@ -371,9 +372,10 @@ def clean_item(request):
     '''
     data = json.loads(request.body)
     html = data.get('content')
+    formula_cut_type = data.get('formula_cut_type')
     ret = {}
     ret['text'], ret['formulas'], ret['math_text'], \
         ret['char_list'], ret['word_list'], \
         ret['char_formula_list'], ret['word_formula_list'], \
-        ret['formula_tuples'] = clean_html(html, 1)
+        ret['formula_tuples'] = clean_html(html, 1, formula_cut_type)
     return response_success(data=ret)

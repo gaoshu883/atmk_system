@@ -4,7 +4,12 @@ import re
 from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
 
 
-def clean_html(raw_html: str = '', id: int = 0):
+def clean_html(raw_html: str = '', id: int = 0, formula_cut_type: int = 1):
+    '''
+    :param raw_html: 原始html代码
+    :param id: 问题id
+    :param formula_cut_type: 公式切分类型 1 整体处置 2 纯文本对待 3 过滤公式
+    '''
     soup = BeautifulSoup(raw_html, 'html.parser')
     content = soup.select_one('.exam-con')
     '''删除无用标签'''
@@ -17,16 +22,27 @@ def clean_html(raw_html: str = '', id: int = 0):
     drop.extend(img_tag)
     for item in drop:
         item.decompose()
-    '''数学表达式替换-提取-解析'''
+
     math_dict = {}
-    for inx, tag in enumerate(soup.select('math')):
-        key = 'HEL_%d_WLDOR_%d_OL' % (id, inx)
-        math = tag.replace_with(key)
-        math_dict[key] = str(math)
-    query_formulas = [{'key': k, 'content': v} for k, v in math_dict.items()]
-    system = TangentCFTBackEnd(
-        config_file=None, data_set=None, query_formulas=query_formulas)
-    formula_tuples = system.get_formula_tuples()
+    formula_tuples = {}
+    if formula_cut_type == 3:
+        '''若过滤公式'''
+        m_drop = []
+        math_tag = soup.select('math')
+        m_drop.extend(math_tag)
+        for item in m_drop:
+            item.decompose()
+    elif formula_cut_type == 1:
+        '''数学表达式替换-提取-解析'''
+        for inx, tag in enumerate(soup.select('math')):
+            key = 'HEL_%d_WLDOR_%d_OL' % (id, inx)
+            math = tag.replace_with(key)
+            math_dict[key] = str(math)
+        query_formulas = [{'key': k, 'content': v}
+                          for k, v in math_dict.items()]
+        system = TangentCFTBackEnd(
+            config_file=None, data_set=None, query_formulas=query_formulas)
+        formula_tuples = system.get_formula_tuples()
 
     '''清除空格、序号、答案括号等字符'''
     text = content.get_text()

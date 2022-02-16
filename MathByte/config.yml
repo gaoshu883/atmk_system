@@ -1,6 +1,10 @@
 cache_file_h5py: '../file_data/math_data.h5'
 cache_file_pickle: '../file_data/vocab_label.pkl'
 embeddings: '../file_data/embeddings.pkl'
+model_labs_h5py: '../file_data/best_model_labs.h5'
+model_lbs_h5py: '../file_data/best_model_lbs.h5'
+model_lab_h5py: '../file_data/best_model_lab.h5'
+model_b_h5py: '../file_data/best_model_b.h5'
 maxlen: 100 # 句子最大长度
 emb_size: 300
 epochs: 40

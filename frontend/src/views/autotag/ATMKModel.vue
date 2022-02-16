@@ -92,9 +92,6 @@
             console.log('getFormulaVector ...', error)
           })
       }
-    },
-    created() {
-      this.preprocess()
     }
   }
 </script>

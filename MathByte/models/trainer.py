@@ -17,6 +17,10 @@ class LSTM_LCM_dynamic:
     def __init__(self, config, text_embedding_matrix=None, use_att=False, use_lcm=False, log_dir=None):
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
+        self.model_b_h5py = config.model_b_h5py
+        self.model_lab_h5py = config.model_lab_h5py
+        self.model_lbs_h5py = config.model_lbs_h5py
+        self.model_labs_h5py = config.model_labs_h5py
         self.use_att = use_att
         self.use_lcm = use_lcm
         self.lcm_stop = 0  # 默认不加 lcm
@@ -88,10 +92,10 @@ class LSTM_LCM_dynamic:
     def _save_model(self, ):
         logging.info("Save model...")
         if self.use_lcm and self.use_att:
-            self.model.save('best_model_labs.h5')
+            self.model.save(self.model_labs_h5py)
         elif self.use_lcm:
-            self.model.save('best_model_lbs.h5')
+            self.model.save(self.model_lbs_h5py)
         elif self.use_att:
-            self.basic_model.save('best_model_lab.h5')
+            self.basic_model.save(self.model_lab_h5py)
         else:
-            self.basic_model.save('best_model_b.h5')
+            self.basic_model.save(self.model_b_h5py)
