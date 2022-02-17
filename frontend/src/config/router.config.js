@@ -19,7 +19,7 @@ export const asyncRouterMap = [
         name: 'dataset',
         redirect: '/dataset/question',
         component: RouteView,
-        meta: { title: '数据集', keepAlive: false, icon: 'database' },
+        meta: { title: '数据采集', keepAlive: false, icon: 'database' },
         children: [
           {
             path: '/dataset/question',
@@ -63,7 +63,7 @@ export const asyncRouterMap = [
         path: '/summary',
         name: 'Summary',
         component: () => import('@/views/dataset/Summary'),
-        meta: { title: '数据分析', icon: 'pie-chart', keepAlive: false }
+        meta: { title: '数据集准备', icon: 'pie-chart', keepAlive: false }
       },
       {
         path: '/atmkmodel',
