@@ -1,6 +1,16 @@
 <template>
   <a-card>
     <a-tree show-line :tree-data="treeData" />
+    <br />
+    <a-input-search
+      style="width: 300px"
+      v-model="searchKey"
+      placeholder="请输入知识点id"
+      enter-button="查询"
+      @search="onSearch"
+    />
+    <br />
+    <p>{{ labelName }}</p>
   </a-card>
 </template>
 
@@ -9,7 +19,10 @@
     name: 'Knowledge',
     data() {
       return {
-        treeData: []
+        list: [],
+        treeData: [],
+        searchKey: '',
+        labelName: ''
       }
     },
     methods: {
@@ -27,6 +40,14 @@
             children.push(ret)
           })
         return children
+      },
+      onSearch() {
+        const target = this.list.find((item) => item.id + '' === this.searchKey)
+        if (target) {
+          this.labelName = target.name
+        } else {
+          this.labelName = ''
+        }
       }
     },
     created() {
@@ -36,6 +57,7 @@
       '$store.getters.labels': {
         immediate: true,
         handler(list) {
+          this.list = list
           const temp = this.mapTreeData(list, '')
           this.treeData = temp
         }

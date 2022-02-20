@@ -42,10 +42,32 @@
     <a-card title="模型训练">
       <a-button type="primary" style="width: 100px">操作</a-button>
     </a-card>
+
+    <br />
+    <a-card title="读取单条数据">
+      <p>
+        如何切公式
+        <a-select v-model="formulaType">
+          <a-select-option :value="1"> 整体处置 </a-select-option>
+          <a-select-option :value="2">按纯文本处置</a-select-option>
+          <a-select-option :value="3">过滤公式</a-select-option>
+        </a-select>
+      </p>
+      <a-textarea v-model="htmlContent" :rows="8" />
+      <br />
+      <br />
+      <a-input v-model="labels" placeholder="请输入本题知识点IDs，以,分隔" />
+      <br />
+      <br />
+      <a-button @click="getInputVector">下载测试数据</a-button>
+      <br />
+      <br />
+      <div>{{ dataResult }}</div>
+    </a-card>
   </div>
 </template>
 <script>
-  import { postDataPrecess, getVectorByType } from '@/api/system'
+  import { postDataPrecess, getVectorByType, cleanUserInput } from '@/api/system'
   import { downloadFile } from '@/utils/util'
 
   export default {
@@ -57,7 +79,11 @@
         textType: 'word',
         textVersion: 'atmk',
         formulaVersion: 'atmk',
-        filenames: {}
+        filenames: {},
+        formulaType: 1,
+        htmlContent: '',
+        labels: '',
+        dataResult: null
       }
     },
     methods: {
@@ -90,6 +116,23 @@
           })
           .catch((error) => {
             console.log('getFormulaVector ...', error)
+          })
+      },
+      getInputVector() {
+        const labels = this.labels
+          .split(',')
+          .map((item) => Number(item))
+          .filter(Boolean)
+        cleanUserInput({
+          content: this.htmlContent,
+          formula_cut_type: this.formulaType,
+          label_list: labels
+        })
+          .then((res) => {
+            downloadFile(JSON.stringify(res.data), 'inputVector.json')
+          })
+          .catch((error) => {
+            console.log('cleanUserInput', error)
           })
       }
     }

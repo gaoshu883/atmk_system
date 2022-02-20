@@ -11,7 +11,8 @@ const systemApi = {
   ManualCheck: '/math_questions/manual_check',
   Preprocess: '/math_questions/preprocess',
   ParseFormula: '/math_questions/parse_formula',
-  CleanItem: '/math_questions/clean_item'
+  CleanItem: '/math_questions/clean_item',
+  SearchQuestion: '/math_questions/search_question'
 }
 
 export function getMathKnowledge() {
@@ -107,6 +108,15 @@ export function parseFormula(params) {
 export function cleanUserInput(params) {
   return request({
     url: systemApi.CleanItem,
+    method: 'post',
+    data: params
+  })
+}
+
+// 查询试题
+export function postSearchQuestion(params) {
+  return request({
+    url: systemApi.SearchQuestion,
     method: 'post',
     data: params
   })

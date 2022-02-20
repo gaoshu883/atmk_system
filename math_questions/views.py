@@ -1,3 +1,4 @@
+from math import ceil
 from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -17,6 +18,7 @@ import time
 import pickle
 import os
 import random
+import numpy as np
 
 
 @login_required
@@ -193,6 +195,8 @@ def data_summary(request):
             max_label = 0
             avg_label = 0
             label_set = set()
+            w_f_ret = {}
+            c_f_ret = {}
             for u in questions:
                 char_list_len = len(u['char_list'])
                 total_char += char_list_len
@@ -212,7 +216,19 @@ def data_summary(request):
                 max_label = max(label_len, max_label)
                 # 用于统计不重复label数
                 label_set.update(u['label_list'])
-
+                # 统计试题长度
+                # 词+公式
+                w_f_len = str(ceil(word_list_len+formula_len))
+                if w_f_len in w_f_ret:
+                    w_f_ret[w_f_len] += 1
+                else:
+                    w_f_ret[w_f_len] = 1
+                # 字+公式
+                c_f_len = str(ceil(char_list_len+formula_len))
+                if c_f_len in c_f_ret:
+                    c_f_ret[c_f_len] += 1
+                else:
+                    c_f_ret[c_f_len] = 1
             l_count = len(label_set)
             q_count = len(questions)
             avg_char = round(total_char / q_count, 2)
@@ -257,7 +273,9 @@ def data_summary(request):
                 'max_tag': max_tag,  # 标记最大数
                 'avg_tag': avg_tag,  # 平均标记数
             },
-            'label_tags': ret  # 每个标签对应的标记数
+            'label_tags': ret,  # 每个标签对应的标记数
+            'word_formula_dis': w_f_ret,  # 词公式长度分布
+            'char_formula_dis': c_f_ret  # 字公式长度分布
         })
     except Exception as e:
         print(e)
@@ -372,10 +390,72 @@ def clean_item(request):
     '''
     data = json.loads(request.body)
     html = data.get('content')
+    label_list = data.get('label_list')
     formula_cut_type = data.get('formula_cut_type')
     ret = {}
     ret['text'], ret['formulas'], ret['math_text'], \
         ret['char_list'], ret['word_list'], \
         ret['char_formula_list'], ret['word_formula_list'], \
         ret['formula_tuples'] = clean_html(html, 1, formula_cut_type)
+
+    # 读取词表
+    vocab_pickle = open(CACHE_VOCAB_LABEL, 'rb')
+    word2index, label2index = pickle.load(vocab_pickle)
+    vocab_pickle.close()
+    PAD_ID = word2index.get('PAD')
+    UNK_ID = word2index.get('UNK')
+    word_index_list = []
+    word_formula_list = ret['word_formula_list']
+    formula_tuples = ret['formula_tuples']
+    for word in word_formula_list:
+        if word in formula_tuples:
+            f = '[F]' + '⌘'.join(formula_tuples[word])
+            word_index_list.append(word2index.get(
+                f, UNK_ID))
+        else:
+            word_index_list.append(word2index.get(
+                word, UNK_ID))
+    pad_size = 100
+    if len(word_index_list) < pad_size:
+        word_index_list.extend(
+            [PAD_ID] * (pad_size - len(word_index_list)))
+    else:
+        word_index_list = word_index_list[:pad_size]
+    ret['text_x'] = word_index_list
+
+    label_list_dense = [label2index[l]
+                        for l in label_list]
+    result = np.zeros(len(label2index))
+    result[label_list_dense] = 1
+    ret['text_y'] = result.tolist()
     return response_success(data=ret)
+
+
+@login_required
+@require_POST
+def search_question(request):
+    '''
+    查询试题id
+    '''
+    data = json.loads(request.body)
+    content = data.get('content')
+    question = None
+    try:
+        with open(CACHE_FILE_PICKLE, 'rb') as data_f_pickle:
+            questions = pickle.load(data_f_pickle)
+            for u in questions:
+                ret = []
+                word_formula_list = u['word_formula_list']
+                formula_tuples = u['formula_tuples']
+                for word in word_formula_list:
+                    if word in formula_tuples:
+                        ret.append('[F]' + '⌘'.join(formula_tuples[word]))
+                    else:
+                        ret.append(word)
+                text = ','.join(ret)
+                if text in content:
+                    question = u
+        return response_success(data=question)
+    except Exception as e:
+        print(e)
+        return response_success(data={})
