@@ -2,7 +2,10 @@ from bs4 import BeautifulSoup
 import jieba
 import re
 from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
-
+from .const import USER_DICT
+# 加载自定义词典
+jieba.initialize()
+jieba.load_userdict(USER_DICT)
 
 def clean_html(raw_html: str = '', id: int = 0, formula_cut_type: int = 1):
     '''
@@ -44,10 +47,10 @@ def clean_html(raw_html: str = '', id: int = 0, formula_cut_type: int = 1):
             config_file=None, data_set=None, query_formulas=query_formulas)
         formula_tuples = system.get_formula_tuples()
 
-    '''清除空格、序号、答案括号等字符'''
+    '''清除所有的空字符，包括空格、换行(\n)、制表符(\t)等'''
     text = content.get_text()
     text = ''.join(text.split())  # 空格去不掉的解决方法
-    # text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text)
+    # text = re.sub(r'(（）)|(（\d+）、)|(\(\d+\)、)|(\d+、)|([A-Z]、)', '', text) # 序号、答案括号
     '''将模式替换成公式'''
     math_text = re.sub(r'HEL_\d+_WLDOR_\d+_OL',
                        lambda matched: replace_formula(matched, math_dict), text)

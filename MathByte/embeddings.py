@@ -2,6 +2,7 @@ import pickle
 from gensim.models import Word2Vec, KeyedVectors
 
 from formula_embedding.tangent_cft_back_end import TangentCFTBackEnd
+from math_questions.const import WORD_MODEL_PATH, CHAR_MODEL_PATH, BAIDU_MODEL_PATH
 
 import logging
 logging.basicConfig(
@@ -22,15 +23,15 @@ class Embeddings:
         :return: 向量
         '''
         if version == 'baidu':
-            model_file_path = 'file_data/sgns.target.word-character.char1-2.dynwin5.thr10.neg5.dim300.iter5'
+            model_file_path = BAIDU_MODEL_PATH
             math_word2vec_model = KeyedVectors.load_word2vec_format(
                 model_file_path, binary=False)
             text_vec = math_word2vec_model.wv[query]
             return text_vec
         else:
-            model_file_path = 'file_data/math_text_char.model'
+            model_file_path = CHAR_MODEL_PATH
             if type_id == 'word':
-                model_file_path = 'file_data/math_text_word.model'
+                model_file_path = WORD_MODEL_PATH
             math_word2vec_model = Word2Vec.load(model_file_path)
             text_vec = math_word2vec_model.wv[query]
             return text_vec
@@ -64,13 +65,13 @@ class Embeddings:
         '''批量读取字or词向量'''
         math_word2vec_model = None
         if version == 'baidu':
-            model_file_path = 'file_data/sgns.target.word-character.char1-2.dynwin5.thr10.neg5.dim300.iter5'
+            model_file_path = BAIDU_MODEL_PATH
             math_word2vec_model = KeyedVectors.load_word2vec_format(
                 model_file_path, binary=False)
         else:
-            model_file_path = 'file_data/math_text_char.model'
+            model_file_path = CHAR_MODEL_PATH
             if token_type == 'word':
-                model_file_path = 'file_data/math_text_word.model'
+                model_file_path = WORD_MODEL_PATH
             math_word2vec_model = Word2Vec.load(model_file_path)
         ret = {}
         for k, v in query_text.items():

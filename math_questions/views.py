@@ -422,12 +422,12 @@ def clean_item(request):
     else:
         word_index_list = word_index_list[:pad_size]
     ret['text_x'] = word_index_list
-
-    label_list_dense = [label2index[l]
-                        for l in label_list]
-    result = np.zeros(len(label2index))
-    result[label_list_dense] = 1
-    ret['text_y'] = result.tolist()
+    if label_list:
+        label_list_dense = [label2index[l]
+                            for l in label_list]
+        result = np.zeros(len(label2index))
+        result[label_list_dense] = 1
+        ret['text_y'] = result.tolist()
     return response_success(data=ret)
 
 

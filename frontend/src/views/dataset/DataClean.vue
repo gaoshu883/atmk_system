@@ -4,8 +4,8 @@
       <a-alert message="清洗的内容" type="info">
         <ul slot="description">
           <li>所有的空字符，包括空格、换行(\n)、制表符(\t)等</li>
-          <li>题号、选项序号：1、(1)、A、</li>
-          <li>用于显示答案位置的括号（）</li>
+          <li><del>题号、选项序号：1、(1)、A、</del></li>
+          <li><del>用于显示答案位置的括号（）</del></li>
           <li>一些标签：table、input、img、.exam-foot</li>
           <li>没有标签的题目</li>
           <li>重复的题目</li>
