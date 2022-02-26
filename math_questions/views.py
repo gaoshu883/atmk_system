@@ -298,9 +298,9 @@ def preprocess(request):
     if not os.path.exists(CACHE_MATH_DATA) \
         or not os.path.exists(CACHE_VOCAB_LABEL) \
             or not os.path.exists(CACHE_EMNEDDINGS):
-        DataPreprocess(text_type, text_version, formula_version, CACHE_FILE_PICKLE,
-                       CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS)
-
+        p = DataPreprocess(text_type, text_version, formula_version, CACHE_FILE_PICKLE,
+                           CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS)
+        p.run_task()
     return response_success(data={
         'math_data': CACHE_MATH_DATA,
         'vocab_label': CACHE_VOCAB_LABEL,
@@ -459,3 +459,27 @@ def search_question(request):
     except Exception as e:
         print(e)
         return response_success(data={})
+
+
+@login_required
+@require_POST
+def word_count(request):
+    text_type = 'word'
+    text_version = 'atmk'
+    formula_version = 'atmk'
+
+    p = DataPreprocess(text_type, text_version,
+                       formula_version, CACHE_FILE_PICKLE)
+    x, y, vocab_list = p.create_vocab_label2index()
+    '''统计词频'''
+    ret = {}
+    for v in vocab_list:
+        if v not in ret:
+            ret[v] = 1
+        else:
+            ret[v] += 1
+    print(len(x), len(vocab_list))
+    return response_success(data={
+        'word2index': x,
+        'vocab_list': vocab_list
+    })

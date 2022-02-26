@@ -5,6 +5,7 @@
       <a-button @click="downloadQuestion('word')">下载题目长度（词）</a-button>
       <a-button @click="downloadQuestion('char')">下载题目长度（字）</a-button>
       <a-button @click="downloadKnowledge">下载知识点</a-button>
+      <a-button @click="downloadWordCount">下载词频</a-button>
       <br />
       <br />
       <a-descriptions bordered layout="vertical" :column="4">
@@ -35,7 +36,7 @@
   </div>
 </template>
 <script>
-  import { getDataSummary, postSearchQuestion } from '@/api/system'
+  import { getDataSummary, postSearchQuestion, postWordCount } from '@/api/system'
   import { labelMixin } from '@/store/dataset-mixin'
   export default {
     name: 'Summary',
@@ -131,6 +132,27 @@
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+      },
+      downloadWordCount() {
+        postWordCount().then((res) => {
+          const list = res.data.vocab_list
+          let str = 'word count\r\n'
+          let i = 0
+          for (const key in list) {
+            let k = key
+            if (key.startsWith('[F]')) {
+              k = `[F]${i++}`
+            }
+            str += `${k}  ${list[key]}\r\n`
+          }
+          str = 'data:application/csv,' + encodeURIComponent(str)
+          const link = document.createElement('a')
+          link.setAttribute('href', str)
+          link.setAttribute('download', 'word_count.csv')
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        })
       }
     }
   }

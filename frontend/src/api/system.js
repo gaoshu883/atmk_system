@@ -12,7 +12,8 @@ const systemApi = {
   Preprocess: '/math_questions/preprocess',
   ParseFormula: '/math_questions/parse_formula',
   CleanItem: '/math_questions/clean_item',
-  SearchQuestion: '/math_questions/search_question'
+  SearchQuestion: '/math_questions/search_question',
+  WordCount: '/math_questions/word_count'
 }
 
 export function getMathKnowledge() {
@@ -119,5 +120,14 @@ export function postSearchQuestion(params) {
     url: systemApi.SearchQuestion,
     method: 'post',
     data: params
+  })
+}
+
+// 词频统计
+export function postWordCount() {
+  return request({
+    url: systemApi.WordCount,
+    method: 'post',
+    timeout: 0
   })
 }

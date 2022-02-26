@@ -11,21 +11,24 @@ class DataPreprocess:
         self.cache_file_h5py = cache_file_h5py  # 数据存储路径
         self.cache_file_pickle = cache_file_pickle  # 词典存储路径
         self.cache_embedding_file = cache_embedding_file  # 预训练向量存储路径
+        self.token_type = token_type
+        self.text_version = text_version
+        self.formula_version = formula_version
 
         # 读取原始数据
         data_f_pickle = open(dataset_path, 'rb')
         self.data_object = pickle.load(data_f_pickle)
         data_f_pickle.close()
 
-        self.word2index, self.label2index = self.create_vocab_label2index(
-            token_type)
-        self.embeddings = self.create_embeddings(
-            token_type, text_version, formula_version)
+    def run_task(self, ):
+        '''处理全流程'''
+        self.word2index, self.label2index, _ = self.create_vocab_label2index()
+        self.embeddings = self.create_embeddings()
         self.label_size = len(self.label2index)
         self.max_sentence_length = 100
 
         # step 1: get (X,y)
-        X, Y = self.get_X_Y(token_type)
+        X, Y = self.get_X_Y()
         # step 2. shuffle, split,
         xy = list(zip(X, Y))
         random.Random(10000).shuffle(xy)
@@ -43,31 +46,32 @@ class DataPreprocess:
         # step 3: save to file system
         self.save_data(train_X, train_Y, vaild_X, valid_Y, test_X, test_Y)
 
-    def create_vocab_label2index(self, token_type):
+    def create_vocab_label2index(self, ):
         '''
         从数据集中创建词表、标签表
-        :param token_type: 切词类型 char | word
         '''
-        word2index = {}
+        word2index = {'<pad>': 0, '<unk>': 1}
         label2index = {}  # 实际上是 label_id to index {120:1}
         labels = []
         vocab_list = []
-        vocab_list.extend(['PAD', 'UNK'])
         for u in self.data_object:
             vocab_list.extend(
-                u['char_list'] if token_type == 'char' else u['word_list'])
+                u['char_list'] if self.token_type == 'char' else u['word_list'])
             vocab_list.extend(list(map(self.__stringify_formula_tuples,
                                        u['formula_tuples'].values())))
             labels.extend(u['label_list'])
 
         target_object = open(
             'create_vocab_label.log', 'a', encoding='utf-8')
-        i = 0
-        for item in vocab_list:
-            if item not in word2index:
-                word2index[item] = i
-                target_object.write(item + '\n')
-                i += 1
+        i = 2
+
+        for word, count in self.word_count(vocab_list).items():
+            # !!仅统计词频大于1的词
+            if count > 1:
+                if word not in word2index:
+                    word2index[word] = i
+                    target_object.write(word + '\n')
+                    i += 1
         j = 0
         for label_id in labels:
             if label_id not in label2index:
@@ -76,16 +80,23 @@ class DataPreprocess:
                 j += 1
         target_object.close()
 
-        return word2index, label2index
+        return word2index, label2index, vocab_list
 
-    def create_embeddings(self, token_type, text_version, formula_version):
+    def word_count(self, vocab_list):
+        '''统计词频'''
+        counts_word_dict = dict()
+        for v in vocab_list:
+            if v not in counts_word_dict:
+                counts_word_dict[v] = 1
+            else:
+                counts_word_dict[v] += 1
+        return counts_word_dict
+
+    def create_embeddings(self, ):
         '''
         创建预训练向量
         根据词表进行创建，并且与词表一一对应
-        找不到的词向量就初始化为0
-        :param token_type: 切词类型 char | word
-        :param text_version: 文本预训练向量来源 atmk | baidu
-        :param formula_version: 公式预训练向量来源 atmk | wiki
+        找不到的词向量就随机初始化
         '''
         emb_size = 300
         vocab_size = len(self.word2index)
@@ -100,14 +111,14 @@ class DataPreprocess:
 
         index2vec_dict = {}
         index2vec_dict.update(system.batch_read_text_vec(
-            word_ret, token_type, text_version))
+            word_ret, self.token_type, self.text_version))
         index2vec_dict.update(
-            system.batch_read_formula_vec(formula_ret, formula_version))
+            system.batch_read_formula_vec(formula_ret, self.formula_version))
         word_embedding_2dlist = [[]] * vocab_size
-        word_embedding_2dlist[0] = np.zeros(emb_size)  # 'PAD'
+        word_embedding_2dlist[0] = np.zeros(emb_size)  # '<pad>'
         bound = np.sqrt(6.0) / np.sqrt(vocab_size)
         for idx, emb in index2vec_dict.items():
-            if idx != 0:  # not PAD
+            if idx != 0:  # not <pad>
                 word_embedding_2dlist[idx] = emb if emb is not None else np.random.uniform(
                     -bound, bound, emb_size)
         word_embedding_final = np.array(word_embedding_2dlist)
@@ -128,19 +139,18 @@ class DataPreprocess:
         result[label_list] = 1
         return result
 
-    def get_X_Y(self, token_type):
+    def get_X_Y(self, ):
         """
         get X and Y given input and labels
-        :param token_type: 切词类型
         """
         X = []
         Y = []
-        PAD_ID = self.word2index.get('PAD')
-        UNK_ID = self.word2index.get('UNK')
+        PAD_ID = self.word2index.get('<pad>')
+        UNK_ID = self.word2index.get('<unk>')
         pad_size = self.max_sentence_length
 
         for u in self.data_object:
-            token_list = u['char_formula_list'] if token_type == 'char' else u['word_formula_list']
+            token_list = u['char_formula_list'] if self.token_type == 'char' else u['word_formula_list']
             formulas = u['formula_tuples']
             content_id_list = []
             for x in token_list:

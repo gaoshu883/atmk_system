@@ -15,5 +15,6 @@ urlpatterns = [
     path('manual_tag', views.tag, name='manual tag'),
     path('manual_check', views.check_same_label, name='manual check'),
     path('clean_item', views.clean_item, name="clean user input"),
-    path('search_question', views.search_question, name="search question")
+    path('search_question', views.search_question, name="search question"),
+    path('word_count', views.word_count, name="word count")
 ]
