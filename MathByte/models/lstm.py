@@ -13,7 +13,7 @@ class Classifier(object):
     分类器
     """
     @classmethod
-    def build(self, config, embedding_matrix=None, use_att=False):
+    def build(self, config, embedding_matrix=None, use_att=False, label_emb_matrix=None):
 
         maxlen = config.maxlen
         vocab_size = config.vocab_size
@@ -27,16 +27,22 @@ class Classifier(object):
                 vocab_size, wvdim, input_length=maxlen, name='text_emb')(text_input)  # (V,wvdim)
         else:
             input_emb = Embedding(vocab_size, wvdim, input_length=maxlen, weights=[
-                                  embedding_matrix], trainable=False, name='text_emb')(text_input)  # (V,wvdim)
+                                  embedding_matrix], name='text_emb')(text_input)  # (V,wvdim)
         # NOTE 使用注意力则返回全部step，否则返回最后step
         # shape=(None, maxlen, hidden_size * 2) or shape=(None, hidden_size * 2)
         lstm_output = Bidirectional(LSTM(hidden_size, return_sequences=use_att))(
             input_emb)
         # 标签
         label_input = Input(shape=(num_classes,), name='label_input')
-        # shape=(None, num_classes, wvdim)
-        label_emb = Embedding(num_classes, wvdim, input_length=num_classes, name='label_emb')(
-            label_input)
+
+        # 标签预训练
+        if label_emb_matrix is None:
+            # shape=(None, num_classes, wvdim)
+            label_emb = Embedding(
+                num_classes, wvdim, input_length=num_classes, name='label_emb')(label_input)
+        else:
+            label_emb = Embedding(num_classes, wvdim, input_length=num_classes, weights=[
+                                  label_emb_matrix],  name='label_emb')(label_input)
         if use_att:  # 标签注意力
             # shape=(None, hidden_size)
             label_att_emb = Dense(hidden_size, activation='tanh',

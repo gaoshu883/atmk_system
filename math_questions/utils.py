@@ -7,6 +7,7 @@ from .const import USER_DICT
 jieba.initialize()
 jieba.load_userdict(USER_DICT)
 
+
 def clean_html(raw_html: str = '', id: int = 0, formula_cut_type: int = 1):
     '''
     :param raw_html: 原始html代码
@@ -119,5 +120,5 @@ def cut_word(text: str) -> list:
     '''
     切词
     '''
-    seg_list = jieba.cut(text, cut_all=False)
+    seg_list = list(jieba.cut(text, cut_all=False))
     return seg_list

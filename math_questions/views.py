@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS
+from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS, CACHE_LABEL_EMNEDDINGS
 
 from .utils import clean_html, remove_same, cut_word, cut_char
 
@@ -306,6 +306,44 @@ def preprocess(request):
         'vocab_label': CACHE_VOCAB_LABEL,
         'embeddings': CACHE_EMNEDDINGS,
     })
+
+
+@login_required
+@require_POST
+def make_label_emb(request):
+    '''准备标签嵌入'''
+    label_set = set()
+    with open(CACHE_FILE_PICKLE, 'rb') as data_f_pickle:
+        questions = pickle.load(data_f_pickle)
+        for u in questions:
+            label_set.update(u['label_list'])
+    data, count = collect(Knowledge)
+    temp = []
+    for u in data:
+        if u['id'] in label_set:
+            label_word_list = cut_word(u['name'])
+            temp.append((u['id'], label_word_list))
+    p = DataPreprocess(dataset_path=CACHE_FILE_PICKLE)
+    p.create_label_emb(labels=temp, cache_label_file=CACHE_LABEL_EMNEDDINGS)
+
+    return response_success(data={})
+
+
+@login_required
+@require_POST
+def search_label_emb(request):
+    '''查询标签嵌入'''
+    data = json.loads(request.body)
+    label_id = int(data.get('label_id'))
+    query_set = Knowledge.objects.filter(id=label_id).values('name')
+    name = list(query_set)[0]['name']
+    label_word_list = cut_word(name)
+    system = Embeddings(CACHE_VOCAB_LABEL,)
+    emb = system.get_vector_of_label(label_id, CACHE_LABEL_EMNEDDINGS)
+    result = {}
+    result["emb"] = emb.tolist()
+    result["words"] = label_word_list
+    return response_success(data=result)
 
 
 @login_required

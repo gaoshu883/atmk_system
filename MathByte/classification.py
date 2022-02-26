@@ -20,7 +20,7 @@ parser.add_argument('--use_att', default=False, type=bool,
                     help='True for use label attention')
 parser.add_argument('--use_lcm', default=False, type=bool,
                     help='True for use label confusion model')
-parser.add_argument('--config', default='config.yml', type=str,
+parser.add_argument('--config', default='config/config_waa1.yml', type=str,
                     help='config file')
 args = parser.parse_args()
 
@@ -38,6 +38,9 @@ if __name__ == '__main__':
     # 加载预训练的向量
     logging.info("Loading embeddings...")
     embeddings_2dlist = utils.load_embed_data(config.embeddings)
+    label_emb_2dlist = None
+    if config.get('label_embeddings', None):
+        label_emb_2dlist = utils.load_embed_data(config.label_embeddings)
 
     # ========== model traing: ==========
     N = 1  # TODO 暂时只做一次
@@ -66,6 +69,6 @@ if __name__ == '__main__':
 
         logging.info('--Round: %d', n+1)
         dy_lcm_model = trainer.LSTM_LCM_dynamic(
-            config, embeddings_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
+            config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
         dy_lcm_model.train_val(data_package, config.epochs, initial_labels)
         logging.info('=======End=======')

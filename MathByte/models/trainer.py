@@ -14,7 +14,7 @@ class LSTM_LCM_dynamic:
     2.若early stop设置为0，则退化为 basic model
     """
 
-    def __init__(self, config, text_embedding_matrix=None, use_att=False, use_lcm=False, log_dir=None):
+    def __init__(self, config, text_embedding_matrix=None, label_emb_matrix=None, use_att=False, use_lcm=False, log_dir=None):
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
         self.model_b_h5py = config.model_b_h5py
@@ -25,7 +25,7 @@ class LSTM_LCM_dynamic:
         self.use_lcm = use_lcm
         self.lcm_stop = 0  # 默认不加 lcm
         self.basic_model, hid, label_emb = Classifier.build(
-            config, text_embedding_matrix, use_att)
+            config, text_embedding_matrix, use_att, label_emb_matrix)
         if use_lcm:
             self.lcm_stop = config.lcm_stop
             self.model = LabelConfusionModel.build(

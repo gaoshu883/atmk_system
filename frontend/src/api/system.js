@@ -13,7 +13,9 @@ const systemApi = {
   ParseFormula: '/math_questions/parse_formula',
   CleanItem: '/math_questions/clean_item',
   SearchQuestion: '/math_questions/search_question',
-  WordCount: '/math_questions/word_count'
+  WordCount: '/math_questions/word_count',
+  MakeLabelEmb: '/math_questions/make_label_emb',
+  SearchLabelEmb: '/math_questions/search_label_emb'
 }
 
 export function getMathKnowledge() {
@@ -128,6 +130,25 @@ export function postWordCount() {
   return request({
     url: systemApi.WordCount,
     method: 'post',
+    timeout: 0
+  })
+}
+
+// 制作标签嵌入
+export function postMakeLabels() {
+  return request({
+    url: systemApi.MakeLabelEmb,
+    method: 'post',
+    timeout: 0
+  })
+}
+
+// 查询标签嵌入
+export function postSearchLabelVector(params) {
+  return request({
+    url: systemApi.SearchLabelEmb,
+    method: 'post',
+    data: params,
     timeout: 0
   })
 }

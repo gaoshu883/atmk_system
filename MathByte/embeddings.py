@@ -111,3 +111,21 @@ class Embeddings:
         embedding_pickle.close()
 
         return data_embedding[vocab2index]
+
+    def get_vector_of_label(self, label_id, cache_embedding_file=None):
+        '''
+        根据标签从 label embeddings 中读取向量
+        :param label: 标签id
+        '''
+        # 读取标签表
+        vocab_pickle = open(self.cache_file_pickle, 'rb')
+        a, label2index = pickle.load(vocab_pickle)
+        vocab_pickle.close()
+        idx = label2index[label_id]
+
+        # 读取标签向量
+        embedding_pickle = open(cache_embedding_file, 'rb')
+        data_embedding = pickle.load(embedding_pickle)
+        embedding_pickle.close()
+
+        return data_embedding[idx]

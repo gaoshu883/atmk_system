@@ -33,6 +33,16 @@
           />
         </p>
         <p>
+          <a-button type="primary" @click="makeLabel">准备标签嵌入</a-button>
+          <a-input-search
+            v-model="labelId"
+            style="margin-left: 32px; width: 300px"
+            placeholder="请输入标签ID"
+            enter-button="查询向量"
+            @search="onSearchLabelVector"
+          />
+        </p>
+        <p>
           数据集：<a-tag>{{ filenames.math_data }}</a-tag> 词表：<a-tag>{{ filenames.vocab_label }}</a-tag>
           词向量：<a-tag>{{ filenames.embeddings }}</a-tag>
         </p>
@@ -67,7 +77,7 @@
   </div>
 </template>
 <script>
-  import { postDataPrecess, getVectorByType, cleanUserInput } from '@/api/system'
+  import { postDataPrecess, getVectorByType, cleanUserInput, postMakeLabels, postSearchLabelVector } from '@/api/system'
   import { downloadFile } from '@/utils/util'
 
   export default {
@@ -83,7 +93,8 @@
         formulaType: 1,
         htmlContent: '',
         labels: '',
-        dataResult: null
+        dataResult: null,
+        labelId: ''
       }
     },
     methods: {
@@ -134,6 +145,12 @@
           .catch((error) => {
             console.log('cleanUserInput', error)
           })
+      },
+      makeLabel() {
+        postMakeLabels()
+      },
+      onSearchLabelVector() {
+        postSearchLabelVector({ label_id: this.labelId })
       }
     }
   }

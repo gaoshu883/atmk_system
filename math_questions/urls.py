@@ -16,5 +16,7 @@ urlpatterns = [
     path('manual_check', views.check_same_label, name='manual check'),
     path('clean_item', views.clean_item, name="clean user input"),
     path('search_question', views.search_question, name="search question"),
-    path('word_count', views.word_count, name="word count")
+    path('word_count', views.word_count, name="word count"),
+    path('make_label_emb', views.make_label_emb, name="label embedding"),
+    path('search_label_emb', views.search_label_emb, name="search label vector")
 ]
