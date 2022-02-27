@@ -27,7 +27,7 @@ class Classifier(object):
                 vocab_size, wvdim, input_length=maxlen, name='text_emb')(text_input)  # (V,wvdim)
         else:
             input_emb = Embedding(vocab_size, wvdim, input_length=maxlen, weights=[
-                                  embedding_matrix], name='text_emb')(text_input)  # (V,wvdim)
+                                  embedding_matrix], trainable=False, name='text_emb')(text_input)  # (V,wvdim)
         # NOTE 使用注意力则返回全部step，否则返回最后step
         # shape=(None, maxlen, hidden_size * 2) or shape=(None, hidden_size * 2)
         lstm_output = Bidirectional(LSTM(hidden_size, return_sequences=use_att))(
@@ -42,7 +42,7 @@ class Classifier(object):
                 num_classes, wvdim, input_length=num_classes, name='label_emb')(label_input)
         else:
             label_emb = Embedding(num_classes, wvdim, input_length=num_classes, weights=[
-                                  label_emb_matrix],  name='label_emb')(label_input)
+                                  label_emb_matrix], trainable=False, name='label_emb')(label_input)
         if use_att:  # 标签注意力
             # shape=(None, hidden_size)
             label_att_emb = Dense(hidden_size, activation='tanh',
@@ -59,8 +59,8 @@ class Classifier(object):
                 *x))([label_att_emb, Permute((2, 1))(h1)])
             m2 = Lambda(lambda x: K.batch_dot(
                 *x))([label_att_emb, Permute((2, 1))(h2)])
-            m1_probs = Dense(time_steps, activation='softmax')(m1)
-            m2_probs = Dense(time_steps, activation='softmax')(m2)
+            m1_probs = Dense(time_steps, activation='sigmoid')(m1)
+            m2_probs = Dense(time_steps, activation='sigmoid')(m2)
             # # shape=(None, 427, 1024)
             label_att_mul = Concatenate(axis=2)(
                 [Lambda(lambda x: K.batch_dot(*x))([m1_probs, h1]),
