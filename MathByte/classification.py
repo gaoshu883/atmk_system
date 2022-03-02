@@ -68,7 +68,7 @@ if __name__ == '__main__':
         initial_labels = [L_train, L_val, L_test]
 
         logging.info('--Round: %d', n+1)
-        dy_lcm_model = trainer.LSTM_LCM_dynamic(
+        labs_model = trainer.LABSModel(
             config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
-        dy_lcm_model.train_val(data_package, config.epochs, initial_labels)
+        labs_model.train(data_package, initial_labels)
         logging.info('=======End=======')

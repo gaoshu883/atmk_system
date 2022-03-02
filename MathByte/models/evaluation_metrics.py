@@ -1,5 +1,6 @@
 import numpy as np
 import tensorflow as tf
+import keras.backend as K
 import logging
 
 # how to convert tensor to numpy
@@ -52,6 +53,56 @@ def Ndcg_3k(y_true, y_pred):
 
 def Ndcg_5k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: Ndcg_k(y_true, y_pred, 4), inp=[y_true, y_pred], Tout=tf.float32)
+
+
+def lcm_metrics(num_classes, alpha):
+
+    def lcm_loss(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        label_sim_dist = y_pred[:, num_classes:]
+        simulated_y_true = K.softmax(label_sim_dist+alpha*y_true)
+        loss1 = - \
+            K.categorical_crossentropy(simulated_y_true, simulated_y_true)
+        loss2 = K.categorical_crossentropy(simulated_y_true, pred_probs)
+        return loss1+loss2
+
+    def lcm_precision_1k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return precision_1k(y_true, pred_probs)
+
+    def lcm_precision_3k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return precision_3k(y_true, pred_probs)
+
+    def lcm_precision_5k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return precision_5k(y_true, pred_probs)
+
+    def lcm_recall_1k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return recall_1k(y_true, pred_probs)
+
+    def lcm_recall_3k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return recall_3k(y_true, pred_probs)
+
+    def lcm_recall_5k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return recall_5k(y_true, pred_probs)
+
+    def lcm_f1_1k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return F1_1k(y_true, pred_probs)
+
+    def lcm_f1_3k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return F1_3k(y_true, pred_probs)
+
+    def lcm_f1_5k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return F1_5k(y_true, pred_probs)
+
+    return lcm_loss, [lcm_precision_1k, lcm_precision_3k, lcm_recall_1k, lcm_recall_3k, lcm_f1_1k, lcm_f1_3k]
 
 
 def my_evaluator(y_true, y_pred):

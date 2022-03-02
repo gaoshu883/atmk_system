@@ -1,20 +1,22 @@
-# checked at 2020.9.14
 import numpy as np
 import keras
+from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
+from keras.models import load_model
 import logging
+from matplotlib import pyplot
+import keras.backend as K
+
 
 from .lstm import Classifier
 from .lcm import LabelConfusionModel
-from .evaluation_metrics import my_evaluator
+from .evaluation_metrics import precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, lcm_metrics
 
 
-class LSTM_LCM_dynamic:
-    """
-    1.可以设置early stop，即设置在某一个epoch就停止LCM的作用
-    2.若early stop设置为0，则退化为 basic model
-    """
+class LABSModel:
 
     def __init__(self, config, text_embedding_matrix=None, label_emb_matrix=None, use_att=False, use_lcm=False, log_dir=None):
+        self.epochs = config.epochs
+        self.alpha = config.alpha
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
         self.model_b_h5py = config.model_b_h5py
@@ -23,79 +25,71 @@ class LSTM_LCM_dynamic:
         self.model_labs_h5py = config.model_labs_h5py
         self.use_att = use_att
         self.use_lcm = use_lcm
-        self.lcm_stop = 0  # 默认不加 lcm
+        self.model_name = self.__get_saved_model_name()
+
         self.basic_model, hid, label_emb = Classifier.build(
-            config, text_embedding_matrix, use_att, label_emb_matrix)
+            config, text_embedding_matrix, use_att, label_emb_matrix, [
+                precision_1k, precision_3k, recall_1k, recall_3k, F1_1k, F1_3k])
+        es_monitor = "val_loss"
+        mc_monitor = "val_precision_1k"
+
         if use_lcm:
-            self.lcm_stop = config.lcm_stop
+            loss, metrics = lcm_metrics(self.num_classes, self.alpha)
             self.model = LabelConfusionModel.build(
-                config, self.basic_model, hid, label_emb)
+                config, self.basic_model, hid, label_emb, loss, metrics)
+            es_monitor = "val_lcm_loss"
+            mc_monitor = "val_lcm_precision_1k"
         # 设置训练过程中的回调函数
-        tensorboard = keras.callbacks.TensorBoard(
-            log_dir=log_dir)
-        self.callbacks = [tensorboard]
+        tb = TensorBoard(log_dir=log_dir)
+        # 设置 early stop
+        es = EarlyStopping(monitor=es_monitor, mode='min',
+                           verbose=1, patience=200)
+        mc = ModelCheckpoint(self.model_name, monitor=mc_monitor,
+                             mode='max', verbose=1, save_best_only=True)
+        self.callbacks = [tb, mc]
 
-    def train_val(self, data_package, epochs, initial_labels):
-        """实验说明：
-        每一轮train完，在val上测试，同时在test上测试
-        """
-        for i in range(epochs):
-            logging.info("Epoch %d starting...", i+1)
-            if i < self.lcm_stop:
-                self.__lcm_train(data_package, initial_labels, i)
-            else:
-                self.__basic_train(data_package, initial_labels, i)
-        return None
-
-    def __basic_train(self, data_package, label_data, epoch_idx):
+    def train(self, data_package, label_data):
         X_train, y_train, X_val, y_val, X_test, y_test = data_package
         L_train, L_val, L_test = label_data
-        # 训练阶段会自动记录每batch指标数据
-        self.basic_model.fit([X_train, L_train], y_train,
-                             batch_size=self.batch_size, verbose=1, epochs=1, callbacks=self.callbacks)  # verbose=1 log 进度条
-        # 验证集上实验
-        # (样本数量, num_classes)
-        pred_probs = self.basic_model.predict([X_val, L_val])
-        logging.info('(Orig)Epoch %d | Validate', epoch_idx+1)
-        my_evaluator(y_val, pred_probs)
+        model = self.model if self.use_lcm else self.basic_model
+        history = model.fit([X_train, L_train], y_train,
+                            batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_val, L_val], y_val), callbacks=self.callbacks)
+        # 在最好的模型上验证
+        loss, metrics = lcm_metrics(self.num_classes, self.alpha)
+        saved_model = load_model(self.model_name, custom_objects={
+            "K": K,
+            "precision_1k": precision_1k,
+            "precision_3k": precision_3k,
+            "recall_1k": recall_1k,
+            "recall_3k": recall_3k,
+            "F1_1k": F1_1k,
+            "F1_3k": F1_3k,
+            "lcm_loss": loss,
+            "lcm_precision_1k": metrics[0],
+            "lcm_precision_3k": metrics[1],
+            "lcm_recall_1k": metrics[2],
+            "lcm_recall_3k": metrics[3],
+            "lcm_f1_1k": metrics[4],
+            "lcm_f1_3k": metrics[5],
+        })
+        train_result = saved_model.evaluate([X_train, L_train], y_train)
+        val_result = saved_model.evaluate([X_val, L_val], y_val)
+        test_result = saved_model.evaluate([X_test, L_test], y_test)
+        print("Best model evaluate=======>")
+        print("train: ", train_result)
+        print("val: ", val_result)
+        print("test: ", test_result)
+        pyplot.plot(history.history['loss'], label='train')
+        pyplot.plot(history.history['val_loss'], label='test')
+        pyplot.legend()
+        pyplot.show()
 
-        # 测试集上实验
-        pred_probs = self.basic_model.predict([X_test, L_test])
-        logging.info('(Orig)Epoch %d | Test', epoch_idx+1)
-        my_evaluator(y_test, pred_probs)
-
-        # 保存模型
-        self._save_model()
-
-    def __lcm_train(self, data_package, label_data, epoch_idx):
-        '''
-        利用label-confusion-matrix训练模型
-        '''
-        X_train, y_train, X_val, y_val, X_test, y_test = data_package
-        L_train, L_val, L_test = label_data
-        self.model.fit([X_train, L_train], y_train,
-                       batch_size=self.batch_size, verbose=1, epochs=1, callbacks=self.callbacks)
-        # 验证集
-        pred_probs = self.model.predict([X_val, L_val])[
-            :, :self.num_classes]
-        logging.info('(LCM)Epoch %d | Validate', epoch_idx+1)
-        my_evaluator(y_val, pred_probs)
-        # 测试集
-        pred_probs = self.model.predict([X_test, L_test])[
-            :, :self.num_classes]
-        logging.info('(LCM)Epoch %d | Test', epoch_idx+1)
-        my_evaluator(y_test, pred_probs)
-
-        # 保存模型
-        self._save_model()
-
-    def _save_model(self, ):
-        logging.info("Save model...")
+    def __get_saved_model_name(self, ):
         if self.use_lcm and self.use_att:
-            self.model.save(self.model_labs_h5py)
+            return self.model_labs_h5py
         elif self.use_lcm:
-            self.model.save(self.model_lbs_h5py)
+            return self.model_lbs_h5py
         elif self.use_att:
-            self.basic_model.save(self.model_lab_h5py)
+            return self.model_lab_h5py
         else:
-            self.basic_model.save(self.model_b_h5py)
+            return self.model_b_h5py
