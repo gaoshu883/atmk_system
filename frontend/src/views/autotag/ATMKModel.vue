@@ -23,7 +23,7 @@
         <br />
         <br />
         <p>
-          <a-button type="primary" @click="preprocess" :loading="loading">准备测试集、验证集、测试集</a-button>
+          <a-button type="primary" @click="preprocess" :loading="loading">准备数据集</a-button>
           <a-input-search
             v-model="vocab"
             style="margin-left: 32px; width: 300px"

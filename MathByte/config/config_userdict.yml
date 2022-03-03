@@ -1,7 +1,7 @@
 cache_file_h5py: '../file_data/word_a_a_userdict/math_data.h5'
 cache_file_pickle: '../file_data/word_a_a_userdict/vocab_label.pkl'
 embeddings: '../file_data/word_a_a_userdict/embeddings.pkl'
-label_embeddings: '../file_data/word_a_a_userdict/label_embeddings.pkl'
+# label_embeddings: '../file_data/word_a_a_userdict/label_embeddings.pkl'
 model_labs_h5py: '../file_data/word_a_a_userdict/best_model_labs.h5'
 model_lbs_h5py: '../file_data/word_a_a_userdict/best_model_lbs.h5'
 model_lab_h5py: '../file_data/word_a_a_userdict/best_model_lab.h5'

@@ -3,7 +3,6 @@ import keras
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
 from keras.models import load_model
 import logging
-from matplotlib import pyplot
 import keras.backend as K
 
 
@@ -49,11 +48,11 @@ class LABSModel:
         self.callbacks = [tb, mc]
 
     def train(self, data_package, label_data):
-        X_train, y_train, X_val, y_val, X_test, y_test = data_package
-        L_train, L_val, L_test = label_data
+        X_train, y_train, X_test, y_test = data_package
+        L_train, L_test = label_data
         model = self.model if self.use_lcm else self.basic_model
-        history = model.fit([X_train, L_train], y_train,
-                            batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_val, L_val], y_val), callbacks=self.callbacks)
+        model.fit([X_train, L_train], y_train,
+                  batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_test, L_test], y_test), callbacks=self.callbacks)
         # 在最好的模型上验证
         loss, metrics = lcm_metrics(self.num_classes, self.alpha)
         saved_model = load_model(self.model_name, custom_objects={
@@ -73,16 +72,10 @@ class LABSModel:
             "lcm_f1_3k": metrics[5],
         })
         train_result = saved_model.evaluate([X_train, L_train], y_train)
-        val_result = saved_model.evaluate([X_val, L_val], y_val)
         test_result = saved_model.evaluate([X_test, L_test], y_test)
         print("Best model evaluate=======>")
         print("train: ", train_result)
-        print("val: ", val_result)
         print("test: ", test_result)
-        pyplot.plot(history.history['loss'], label='train')
-        pyplot.plot(history.history['val_loss'], label='test')
-        pyplot.legend()
-        pyplot
 
     def __get_saved_model_name(self, ):
         if self.use_lcm and self.use_att:

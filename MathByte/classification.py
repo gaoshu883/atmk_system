@@ -4,6 +4,7 @@ import numpy as np
 import argparse
 import logging
 from datetime import datetime
+from sklearn.model_selection import KFold, StratifiedKFold
 
 from models import trainer
 import utils
@@ -31,7 +32,7 @@ if __name__ == '__main__':
     logging.info(config)
     # 加载数据
     logging.info("Loading data...")
-    word2index, label2index, trainX, trainY, vaildX, vaildY, testX, testY = utils.load_data(
+    word2index, label2index, X, y = utils.load_data(
         config.cache_file_h5py, config.cache_file_pickle)
     config.vocab_size = len(word2index)
     config.num_classes = len(label2index)
@@ -42,14 +43,22 @@ if __name__ == '__main__':
     if config.get('label_embeddings', None):
         label_emb_2dlist = utils.load_embed_data(config.label_embeddings)
 
-    # ========== model traing: ==========
-    N = 1  # TODO 暂时只做一次
-    for n in range(N):
+    # ========== model training: ==========
+    # shuffle, split,
+    X = np.array(X)
+    y = np.array(y)
+    kf = KFold(shuffle=True)    # 定义分成几个组
+    n = 0
+    for train_index, test_index in kf.split(X):
+        n += 1
+        print("TRAIN:", train_index, "TEST:", test_index)
+        X_train, X_test = X[train_index], X[test_index]
+        y_train, y_test = y[train_index], y[test_index]
         np.random.seed(n)  # 这样保证了每次试验的seed一致
         log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
-        data_package = [trainX, trainY, vaildX, vaildY, testX, testY]
+        data_package = [X_train, y_train, X_test, y_test]
         '''
-        初始化模拟标签数据（L_train,L_val,L_test）
+        初始化模拟标签数据（L_train,L_test）
         shape=(None,num_classes)
         [[  0   1   2 ... 424 425 426]
          [  0   1   2 ... 424 425 426]
@@ -60,14 +69,12 @@ if __name__ == '__main__':
          [  0   1   2 ... 424 425 426]]
         '''
         L_train = np.array([np.array(range(config.num_classes))
-                           for i in range(len(trainX))])
-        L_val = np.array([np.array(range(config.num_classes))
-                         for i in range(len(vaildX))])
+                           for i in range(len(X_train))])
         L_test = np.array([np.array(range(config.num_classes))
-                          for i in range(len(testX))])
-        initial_labels = [L_train, L_val, L_test]
+                          for i in range(len(X_test))])
+        initial_labels = [L_train, L_test]
 
-        logging.info('--Round: %d', n+1)
+        logging.info('--Round: %d', n)
         labs_model = trainer.LABSModel(
             config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
         labs_model.train(data_package, initial_labels)

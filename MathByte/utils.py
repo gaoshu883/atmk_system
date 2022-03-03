@@ -33,21 +33,17 @@ def load_data(cache_file_h5py, cache_file_pickle):
     """
     if not os.path.exists(cache_file_h5py) or not os.path.exists(cache_file_pickle):
         raise RuntimeError("############################ERROR##############################\n. "
-                           "请先准备训练集、验证集、测试集")
+                           "请先准备数据集")
     f_data = h5py.File(cache_file_h5py, 'r')
     # return narray
     # https://stackoverflow.com/questions/46733052/read-hdf5-file-into-numpy-array
-    train_X = f_data['train_X'][()]
-    train_Y = f_data['train_Y'][()]
-    vaild_X = f_data['vaild_X'][()]
-    valid_Y = f_data['valid_Y'][()]
-    test_X = f_data['test_X'][()]
-    test_Y = f_data['test_Y'][()]
+    X = f_data['X'][()]
+    y = f_data['y'][()]
 
     word2index, label2index = None, None
     with open(cache_file_pickle, 'rb') as data_f_pickle:
         word2index, label2index = pickle.load(data_f_pickle)
-    return word2index, label2index, train_X, train_Y, vaild_X, valid_Y, test_X, test_Y
+    return word2index, label2index, X, y
 
 
 def load_embed_data(embedding_pickle):

@@ -28,24 +28,8 @@ class DataPreprocess:
         self.label_size = len(self.label2index)
         self.max_sentence_length = 100
 
-        # step 1: get (X,y)
         X, Y = self.get_X_Y()
-        # step 2. shuffle, split,
-        xy = list(zip(X, Y))
-        random.Random(10000).shuffle(xy)
-        X, Y = zip(*xy)
-        X = np.array(X)
-        Y = np.array(Y)
-        num_examples = len(X)
-        num_train = int(num_examples*0.6)
-        num_valid = int(num_examples*0.15)
-        train_X, train_Y = X[0:num_train], Y[0:num_train]
-        vaild_X, valid_Y = X[num_train:num_train +
-                             num_valid], Y[num_train:num_train+num_valid]
-        test_X, test_Y = X[num_train+num_valid:], Y[num_train+num_valid:]
-
-        # step 3: save to file system
-        self.save_data(train_X, train_Y, vaild_X, valid_Y, test_X, test_Y)
+        self.save_data(X, Y)
 
     def create_vocab_label2index(self, ):
         '''
@@ -173,15 +157,11 @@ class DataPreprocess:
             Y.append(label_list_sparse)
         return X, Y
 
-    def save_data(self, train_X, train_Y, vaild_X, valid_Y, test_X, test_Y):
+    def save_data(self, X, y):
         # train/valid/test data using h5py
         f = h5py.File(self.cache_file_h5py, 'w')
-        f['train_X'] = train_X
-        f['train_Y'] = train_Y
-        f['vaild_X'] = vaild_X
-        f['valid_Y'] = valid_Y
-        f['test_X'] = test_X
-        f['test_Y'] = test_Y
+        f['X'] = X
+        f['y'] = y
         f.close()
         # save word2index, label2index
         with open(self.cache_file_pickle, 'wb') as target_file:
