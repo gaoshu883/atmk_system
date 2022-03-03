@@ -82,7 +82,7 @@ class LABSModel:
         pyplot.plot(history.history['loss'], label='train')
         pyplot.plot(history.history['val_loss'], label='test')
         pyplot.legend()
-        pyplot.show()
+        pyplot
 
     def __get_saved_model_name(self, ):
         if self.use_lcm and self.use_att:
