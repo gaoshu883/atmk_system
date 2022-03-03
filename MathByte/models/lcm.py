@@ -18,7 +18,7 @@ class LabelConfusionModel(object):
                               name='label_lcm_emb')(label_emb)  # shape=(None, num_classes, hidden_size*2)
         # similarity part:
         # (num_classes,hidden_size*2) dot (hidden_size*2,1) --> (num_classes,1)
-        text_h_state = basic_model.layers[-1].input  # 取text最后一层的输入
+        # text_h_state = basic_model.layers[-1].input  # 取text最后一层的输入
         doc_product = Dot(axes=(2, 1))(
             [label_lcm_emb, text_h_state])  # shape=(None, num_classes)
         # 标签模拟分布
