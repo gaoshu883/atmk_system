@@ -1,0 +1,8 @@
+gensim==3.4.0
+h5py==3.6.0
+keras==2.8.0
+numpy==1.21.0
+pytz==2020.5
+PyYAML==6.0
+scikit_learn==1.0.2
+tensorflow==2.8.0

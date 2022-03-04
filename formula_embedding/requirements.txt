@@ -1,0 +1,4 @@
+beautifulsoup4==4.10.0
+gensim==3.4.0
+numpy==1.21.0
+torch==1.9.0+cu102
