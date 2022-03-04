@@ -36,10 +36,10 @@ class LABSModel:
         tb = TensorBoard(log_dir=os.path.join(log_dir, "fit"))
         # 设置 early stop
         es = EarlyStopping(monitor=es_monitor, mode='min',
-                           verbose=1, patience=200)
+                           verbose=1, patience=2)
         mc = ModelCheckpoint(self.model_filepath, monitor=mc_monitor,
                              mode='max', verbose=1, save_best_only=True)
-        self.callbacks = [tb, mc]
+        self.callbacks = [tb, es, mc]
 
     def train(self, data_package, label_data):
         X_train, y_train, X_test, y_test = data_package
@@ -49,11 +49,14 @@ class LABSModel:
                   batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_test, L_test], y_test), callbacks=self.callbacks)
 
     def __get_saved_model_name(self, ):
+        '''
+        {epoch:02d}-{val_lcm_precision_1k:.2f}
+        '''
         if self.use_lcm and self.use_att:
-            return "checkpoint_labs-{epoch:02d}-{val_lcm_precision_1k:.2f}.h5"
+            return "checkpoint_labs.h5"
         elif self.use_lcm:
-            return "checkpoint_lbs-{epoch:02d}-{val_lcm_precision_1k:.2f}.h5"
+            return "checkpoint_lbs.h5"
         elif self.use_att:
-            return "checkpoint_lab-{epoch:02d}-{val_precision_1k:.2f}.h5"
+            return "checkpoint_lab.h5"
         else:
-            return "checkpoint_b-{epoch:02d}-{val_precision_1k:.2f}.h5"
+            return "checkpoint_b.h5"
