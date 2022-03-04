@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST
 from math_questions.models import Knowledge, Content, KnowledgeTag
 from atmk_system.utils import response_success, response_error, collect
 from django.forms.models import model_to_dict
-from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS, CACHE_LABEL_EMNEDDINGS
+from .const import CACHE_FILE_PICKLE, CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS, CACHE_LABEL_EMNEDDINGS, MAX_LENGTH
 
 from .utils import clean_html, remove_same, cut_word, cut_char
 
@@ -300,7 +300,7 @@ def preprocess(request):
             or not os.path.exists(CACHE_EMNEDDINGS):
         p = DataPreprocess(text_type, text_version, formula_version, CACHE_FILE_PICKLE,
                            CACHE_MATH_DATA, CACHE_VOCAB_LABEL, CACHE_EMNEDDINGS)
-        p.run_task()
+        p.run_task(MAX_LENGTH)
     return response_success(data={
         'math_data': CACHE_MATH_DATA,
         'vocab_label': CACHE_VOCAB_LABEL,
@@ -453,7 +453,7 @@ def clean_item(request):
         else:
             word_index_list.append(word2index.get(
                 word, UNK_ID))
-    pad_size = 100
+    pad_size = MAX_LENGTH
     if len(word_index_list) < pad_size:
         word_index_list.extend(
             [PAD_ID] * (pad_size - len(word_index_list)))

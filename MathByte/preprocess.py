@@ -21,12 +21,12 @@ class DataPreprocess:
         self.data_object = pickle.load(data_f_pickle)
         data_f_pickle.close()
 
-    def run_task(self, ):
+    def run_task(self, max_length=100):
         '''处理全流程'''
         self.word2index, self.label2index, _ = self.create_vocab_label2index()
         self.embeddings = self.create_embeddings()
         self.label_size = len(self.label2index)
-        self.max_sentence_length = 100
+        self.max_sentence_length = max_length
 
         X, Y = self.get_X_Y()
         self.save_data(X, Y)
