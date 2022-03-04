@@ -30,7 +30,6 @@ class LABSModel:
             loss, metrics = lcm_metrics(self.num_classes, self.alpha)
             self.model = LabelConfusionModel.build(
                 config, self.basic_model, hid, label_emb, loss, metrics)
-            es_monitor = "val_lcm_loss"
             mc_monitor = "val_lcm_precision_1k"
         # 设置训练过程中的回调函数
         tb = TensorBoard(log_dir=os.path.join(log_dir, "fit"))
