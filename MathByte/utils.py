@@ -5,6 +5,8 @@ import time
 import h5py
 import pickle
 from datetime import timedelta
+import random
+import string
 
 
 class AttrDict(dict):
@@ -52,3 +54,8 @@ def load_embed_data(embedding_pickle):
     with open(embedding_pickle, 'rb') as data_f_pickle:
         embeddings = pickle.load(data_f_pickle)
     return embeddings
+
+
+def randomword(length):
+    letters = string.ascii_lowercase
+    return ''.join(random.choice(letters) for i in range(length))

@@ -1,9 +1,7 @@
 import numpy as np
+import os
 import keras
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
-from keras.models import load_model
-import logging
-import keras.backend as K
 
 
 from .lstm import Classifier
@@ -18,13 +16,10 @@ class LABSModel:
         self.alpha = config.alpha
         self.num_classes = config.num_classes
         self.batch_size = config.batch_size
-        self.model_b_h5py = config.model_b_h5py
-        self.model_lab_h5py = config.model_lab_h5py
-        self.model_lbs_h5py = config.model_lbs_h5py
-        self.model_labs_h5py = config.model_labs_h5py
         self.use_att = use_att
         self.use_lcm = use_lcm
-        self.model_name = self.__get_saved_model_name()
+        self.model_filepath = os.path.join(
+            log_dir, "model", self.__get_saved_model_name())
 
         self.basic_model, hid, label_emb = Classifier.build(
             config, text_embedding_matrix, use_att, label_emb_matrix, [
@@ -39,11 +34,11 @@ class LABSModel:
             es_monitor = "val_lcm_loss"
             mc_monitor = "val_lcm_precision_1k"
         # 设置训练过程中的回调函数
-        tb = TensorBoard(log_dir=log_dir)
+        tb = TensorBoard(log_dir=os.path.join(log_dir, "fit"))
         # 设置 early stop
         es = EarlyStopping(monitor=es_monitor, mode='min',
                            verbose=1, patience=200)
-        mc = ModelCheckpoint(self.model_name, monitor=mc_monitor,
+        mc = ModelCheckpoint(self.model_filepath, monitor=mc_monitor,
                              mode='max', verbose=1, save_best_only=True)
         self.callbacks = [tb, mc]
 
@@ -53,36 +48,13 @@ class LABSModel:
         model = self.model if self.use_lcm else self.basic_model
         model.fit([X_train, L_train], y_train,
                   batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_test, L_test], y_test), callbacks=self.callbacks)
-        # 在最好的模型上验证
-        loss, metrics = lcm_metrics(self.num_classes, self.alpha)
-        saved_model = load_model(self.model_name, custom_objects={
-            "K": K,
-            "precision_1k": precision_1k,
-            "precision_3k": precision_3k,
-            "recall_1k": recall_1k,
-            "recall_3k": recall_3k,
-            "F1_1k": F1_1k,
-            "F1_3k": F1_3k,
-            "lcm_loss": loss,
-            "lcm_precision_1k": metrics[0],
-            "lcm_precision_3k": metrics[1],
-            "lcm_recall_1k": metrics[2],
-            "lcm_recall_3k": metrics[3],
-            "lcm_f1_1k": metrics[4],
-            "lcm_f1_3k": metrics[5],
-        })
-        train_result = saved_model.evaluate([X_train, L_train], y_train)
-        test_result = saved_model.evaluate([X_test, L_test], y_test)
-        print("Best model evaluate=======>")
-        print("train: ", train_result)
-        print("test: ", test_result)
 
     def __get_saved_model_name(self, ):
         if self.use_lcm and self.use_att:
-            return self.model_labs_h5py
+            return "checkpoint_labs-{epoch:02d}-{val_lcm_precision_1k:.2f}.h5"
         elif self.use_lcm:
-            return self.model_lbs_h5py
+            return "checkpoint_lbs-{epoch:02d}-{val_lcm_precision_1k:.2f}.h5"
         elif self.use_att:
-            return self.model_lab_h5py
+            return "checkpoint_lab-{epoch:02d}-{val_precision_1k:.2f}.h5"
         else:
-            return self.model_b_h5py
+            return "checkpoint_b-{epoch:02d}-{val_precision_1k:.2f}.h5"

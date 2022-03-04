@@ -67,7 +67,7 @@ class Classifier(object):
                  Lambda(lambda x: K.batch_dot(*x))([m2_probs, h2])])
             # shape=(None, hidden_size * 2)
             lstm_output = Lambda(lambda x: K.sum(
-                x, 1)/num_classes)(label_att_mul)
+                x, 1)/num_classes, name="att_context")(label_att_mul)
 
         pred_probs = Dense(num_classes, activation='sigmoid',
                            name='pred_probs')(lstm_output)

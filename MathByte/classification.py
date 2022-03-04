@@ -1,9 +1,10 @@
 # coding: UTF-8
-import datetime
+import os
 import numpy as np
 import argparse
 import logging
 from datetime import datetime
+import pytz
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from models import trainer
@@ -42,20 +43,31 @@ if __name__ == '__main__':
     label_emb_2dlist = None
     if config.get('label_embeddings', None):
         label_emb_2dlist = utils.load_embed_data(config.label_embeddings)
-
+    # 当前模型名称
+    model_name = "b"
+    if args.use_att & args.use_lcm:
+        model_name = "labs"
+    elif args.use_att:
+        model_name = "lab"
+    elif args.use_lcm:
+        model_name = "lbs"
+    logging.info("model name %s" % model_name)
     # ========== model training: ==========
     # shuffle, split,
     X = np.array(X)
     y = np.array(y)
     kf = KFold(shuffle=True)    # 定义分成几个组
     n = 0
+    t_k = utils.randomword(6)
     for train_index, test_index in kf.split(X):
         n += 1
+        file_id = '%s-%s-%d-%s' % (t_k, model_name, n, datetime.now(pytz.timezone('Asia/Shanghai')
+                                                                    ).strftime("%m%d-%H%M%S"))
+        log_dir = os.path.join('logs', file_id)
         print("TRAIN:", train_index, "TEST:", test_index)
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         np.random.seed(n)  # 这样保证了每次试验的seed一致
-        log_dir = "logs\\fit\\" + datetime.now().strftime("%Y%m%d-%H%M%S")
         data_package = [X_train, y_train, X_test, y_test]
         '''
         初始化模拟标签数据（L_train,L_test）
