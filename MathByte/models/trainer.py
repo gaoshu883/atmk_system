@@ -6,7 +6,7 @@ from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
 
 from .lstm import Classifier
 from .lcm import LabelConfusionModel
-from .evaluation_metrics import precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, lcm_metrics
+from .evaluation_metrics import basic_metrics, lcm_metrics
 
 
 class LABSModel:
@@ -22,8 +22,7 @@ class LABSModel:
             log_dir, "model", self.__get_saved_model_name())
 
         self.basic_model, hid, label_emb = Classifier.build(
-            config, text_embedding_matrix, use_att, label_emb_matrix, [
-                precision_1k, precision_3k, recall_1k, recall_3k, F1_1k, F1_3k])
+            config, text_embedding_matrix, use_att, label_emb_matrix, basic_metrics())
         es_monitor = "val_loss"
         mc_monitor = "val_precision_1k"
 

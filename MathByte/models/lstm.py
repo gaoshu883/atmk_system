@@ -4,9 +4,6 @@ from keras.layers import Input, Dense, LSTM, Embedding, Bidirectional
 from keras.layers import Flatten, Concatenate, Permute, Lambda, Dot
 import keras.backend as K
 
-from .multi_label_loss import MyLoss
-from .evaluation_metrics import precision_1k, precision_3k, precision_5k, recall_1k, recall_3k, recall_5k, F1_1k, F1_3k, F1_5k, Ndcg_1k, Ndcg_3k, Ndcg_5k
-
 
 class Classifier(object):
     """

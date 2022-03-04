@@ -11,6 +11,10 @@ def precision_1k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: precision_k(y_true, y_pred, 0), inp=[y_true, y_pred], Tout=tf.float32)
 
 
+def precision_2k(y_true, y_pred):
+    return tf.py_function(func=lambda y_true, y_pred: precision_k(y_true, y_pred, 1), inp=[y_true, y_pred], Tout=tf.float32)
+
+
 def precision_3k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: precision_k(y_true, y_pred, 2), inp=[y_true, y_pred], Tout=tf.float32)
 
@@ -23,6 +27,10 @@ def recall_1k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: recall_k(y_true, y_pred, 0), inp=[y_true, y_pred], Tout=tf.float32)
 
 
+def recall_2k(y_true, y_pred):
+    return tf.py_function(func=lambda y_true, y_pred: recall_k(y_true, y_pred, 1), inp=[y_true, y_pred], Tout=tf.float32)
+
+
 def recall_3k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: recall_k(y_true, y_pred, 2), inp=[y_true, y_pred], Tout=tf.float32)
 
@@ -33,6 +41,10 @@ def recall_5k(y_true, y_pred):
 
 def F1_1k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: F1_k(y_true, y_pred, 0), inp=[y_true, y_pred], Tout=tf.float32)
+
+
+def F1_2k(y_true, y_pred):
+    return tf.py_function(func=lambda y_true, y_pred: F1_k(y_true, y_pred, 1), inp=[y_true, y_pred], Tout=tf.float32)
 
 
 def F1_3k(y_true, y_pred):
@@ -55,6 +67,10 @@ def Ndcg_5k(y_true, y_pred):
     return tf.py_function(func=lambda y_true, y_pred: Ndcg_k(y_true, y_pred, 4), inp=[y_true, y_pred], Tout=tf.float32)
 
 
+def basic_metrics():
+    return [precision_1k, precision_2k, precision_3k, precision_5k, recall_1k, recall_2k, recall_3k, recall_5k, F1_1k, F1_2k, F1_3k, F1_5k]
+
+
 def lcm_metrics(num_classes, alpha):
 
     def lcm_loss(y_true, y_pred):
@@ -70,6 +86,10 @@ def lcm_metrics(num_classes, alpha):
         pred_probs = y_pred[:, :num_classes]
         return precision_1k(y_true, pred_probs)
 
+    def lcm_precision_2k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return precision_2k(y_true, pred_probs)
+
     def lcm_precision_3k(y_true, y_pred):
         pred_probs = y_pred[:, :num_classes]
         return precision_3k(y_true, pred_probs)
@@ -81,6 +101,10 @@ def lcm_metrics(num_classes, alpha):
     def lcm_recall_1k(y_true, y_pred):
         pred_probs = y_pred[:, :num_classes]
         return recall_1k(y_true, pred_probs)
+
+    def lcm_recall_2k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return recall_2k(y_true, pred_probs)
 
     def lcm_recall_3k(y_true, y_pred):
         pred_probs = y_pred[:, :num_classes]
@@ -94,6 +118,10 @@ def lcm_metrics(num_classes, alpha):
         pred_probs = y_pred[:, :num_classes]
         return F1_1k(y_true, pred_probs)
 
+    def lcm_f1_2k(y_true, y_pred):
+        pred_probs = y_pred[:, :num_classes]
+        return F1_2k(y_true, pred_probs)
+
     def lcm_f1_3k(y_true, y_pred):
         pred_probs = y_pred[:, :num_classes]
         return F1_3k(y_true, pred_probs)
@@ -102,7 +130,7 @@ def lcm_metrics(num_classes, alpha):
         pred_probs = y_pred[:, :num_classes]
         return F1_5k(y_true, pred_probs)
 
-    return lcm_loss, [lcm_precision_1k, lcm_precision_3k, lcm_recall_1k, lcm_recall_3k, lcm_f1_1k, lcm_f1_3k]
+    return lcm_loss, [lcm_precision_1k, lcm_precision_2k, lcm_precision_3k, lcm_precision_5k, lcm_recall_1k, lcm_recall_2k, lcm_recall_3k, lcm_recall_5k, lcm_f1_1k, lcm_f1_2k, lcm_f1_3k, lcm_f1_5k]
 
 
 def my_evaluator(y_true, y_pred):
