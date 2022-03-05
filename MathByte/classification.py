@@ -24,6 +24,8 @@ parser.add_argument('--use_lcm', default=False, type=bool,
                     help='True for use label confusion model')
 parser.add_argument('--config', default='config/config_waa1.yml', type=str,
                     help='config file')
+parser.add_argument('--round', default=5, type=int,
+                    help='round number')
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -56,15 +58,18 @@ if __name__ == '__main__':
     # shuffle, split,
     X = np.array(X)
     y = np.array(y)
-    kf = KFold(shuffle=True)    # 定义分成几个组
+    kf = KFold(shuffle=True)    # 默认5折
     n = 0
     t_k = utils.randomword(6)
     for train_index, test_index in kf.split(X):
         n += 1
+        if n > args.round:
+            break
         file_id = '%s-%s-%d-%s' % (t_k, model_name, n, datetime.now(pytz.timezone('Asia/Shanghai')
                                                                     ).strftime("%m%d-%H%M%S"))
         log_dir = os.path.join('logs', file_id)
-        print("TRAIN:", train_index, "TEST:", test_index)
+        print("TRAIN:", train_index, len(train_index),
+              "TEST:", test_index, len(test_index))
         X_train, X_test = X[train_index], X[test_index]
         y_train, y_test = y[train_index], y[test_index]
         np.random.seed(n)  # 这样保证了每次试验的seed一致
@@ -87,7 +92,7 @@ if __name__ == '__main__':
         initial_labels = [L_train, L_test]
 
         logging.info('--Round: %d', n)
-        labs_model = trainer.LABSModel(
-            config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
-        labs_model.train(data_package, initial_labels)
+        # labs_model = trainer.LABSModel(
+        #     config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
+        # labs_model.train(data_package, initial_labels)
         logging.info('=======End=======')
