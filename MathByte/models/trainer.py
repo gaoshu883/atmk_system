@@ -25,6 +25,10 @@ class LABSModel:
             config, text_embedding_matrix, use_att, label_emb_matrix, basic_metrics())
         es_monitor = "val_loss"
         mc_monitor = "val_precision_1k"
+        patience = 2
+        if (use_att == False) & (use_lcm == False):
+            patience = 20
+        print(patience, "patience")
 
         if use_lcm:
             loss, metrics = lcm_metrics(self.num_classes, self.alpha)
@@ -35,7 +39,7 @@ class LABSModel:
         tb = TensorBoard(log_dir=os.path.join(log_dir, "fit"))
         # 设置 early stop
         es = EarlyStopping(monitor=es_monitor, mode='min',
-                           verbose=1, patience=2)
+                           verbose=1, patience=patience)
         mc = ModelCheckpoint(self.model_filepath, monitor=mc_monitor,
                              mode='max', verbose=1, save_best_only=True)
         self.callbacks = [tb, es, mc]
