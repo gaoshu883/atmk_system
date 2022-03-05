@@ -35,7 +35,7 @@
         </span>
         <span>（清洗时间~5min）</span>
       </p>
-      <br />
+      <!-- <br />
       <a-card>
         <p>输入试题：</p>
         <a-textarea v-model="content" :rows="8" />
@@ -45,7 +45,7 @@
         <br />
         <br />
         <div>{{ result }}</div>
-      </a-card>
+      </a-card> -->
       <br />
       <a-card title="示例" size="small" :loading="loading">
         <p>题目：{{ demoData.text }}</p>

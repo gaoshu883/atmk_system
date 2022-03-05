@@ -68,7 +68,7 @@
           {
             title: '题目',
             dataIndex: 'text',
-            width: '30%',
+            width: '50%',
             customRender: (text) => (
               <div
                 {...{
@@ -79,11 +79,11 @@
               ></div>
             )
           },
-          {
-            title: '文本',
-            dataIndex: 'clean_text',
-            width: '30%'
-          },
+          // {
+          //   title: '文本',
+          //   dataIndex: 'clean_text',
+          //   width: '30%'
+          // },
           {
             title: '知识点',
             dataIndex: 'labels',
