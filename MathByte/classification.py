@@ -92,7 +92,7 @@ if __name__ == '__main__':
         initial_labels = [L_train, L_test]
 
         logging.info('--Round: %d', n)
-        # labs_model = trainer.LABSModel(
-        #     config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
-        # labs_model.train(data_package, initial_labels)
+        labs_model = trainer.LABSModel(
+            config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
+        labs_model.train(data_package, initial_labels)
         logging.info('=======End=======')
