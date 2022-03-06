@@ -58,7 +58,7 @@ if __name__ == '__main__':
     # shuffle, split,
     X = np.array(X)
     y = np.array(y)
-    kf = KFold(shuffle=True, random_state=245)    # 默认5折
+    kf = KFold(shuffle=True)    # 默认5折
     n = 0
     t_k = utils.randomword(6)
     for train_index, test_index in kf.split(X):
