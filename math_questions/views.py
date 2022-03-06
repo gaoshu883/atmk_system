@@ -440,8 +440,8 @@ def clean_item(request):
     vocab_pickle = open(CACHE_VOCAB_LABEL, 'rb')
     word2index, label2index = pickle.load(vocab_pickle)
     vocab_pickle.close()
-    PAD_ID = word2index.get('PAD')
-    UNK_ID = word2index.get('UNK')
+    PAD_ID = word2index.get('<pad>')
+    UNK_ID = word2index.get('<unk>')
     word_index_list = []
     word_formula_list = ret['word_formula_list']
     formula_tuples = ret['formula_tuples']
