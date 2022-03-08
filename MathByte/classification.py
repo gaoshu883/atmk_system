@@ -58,14 +58,14 @@ if __name__ == '__main__':
     # shuffle, split,
     # 确保每次随机出来的数据是一样的
     X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.25, random_state=1863)
+        X, y, test_size=0.25, random_state=63)
     print("TOTAL:", len(X),
           "TRAIN:", X_train, len(X_train),
           "TEST:", X_test, len(X_test))
     file_id = '%s-%s-%s' % (utils.randomword(6), model_name, datetime.now(pytz.timezone('Asia/Shanghai')
                                                                           ).strftime("%m%d-%H%M%S"))
     log_dir = os.path.join('logs', file_id)
-    np.random.seed(9)  # 这样保证了每次试验的seed一致
+    np.random.seed(1)  # 这样保证了每次试验的seed一致
     '''
     初始化模拟标签数据（L_train,L_test）
     shape=(None,num_classes)
