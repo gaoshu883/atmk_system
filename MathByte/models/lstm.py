@@ -72,7 +72,7 @@ class Classifier(object):
         model = Model(inputs=[text_input, label_input], outputs=pred_probs)
         # 每一批次评估一次
         model.compile(loss='binary_crossentropy',
-                      optimizer='adam', metrics=metrics)  # 自定义评价函数
+                      optimizer='Adam', metrics=metrics)  # 自定义评价函数
         model._get_distribution_strategy = lambda: None  # fix bug for 2.1 tensorboard
         print(model.summary())
         return model, lstm_output, label_emb

@@ -31,7 +31,7 @@ class LabelConfusionModel(object):
         # compile；
         model = Model(
             inputs=basic_model.inputs, outputs=concat_output)
-        model.compile(loss=loss, optimizer='adam', metrics=metrics)
+        model.compile(loss=loss, optimizer='Adam', metrics=metrics)
         model._get_distribution_strategy = lambda: None
         print(model.summary())
         return model
