@@ -3,6 +3,7 @@ import os
 import keras
 from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, CSVLogger
 from keras.models import load_model
+import keras.backend as K
 
 from .lstm import Classifier
 from .lcm import LabelConfusionModel
@@ -53,8 +54,36 @@ class LABSModel:
                   batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_split=0.2, callbacks=self.callbacks)
 
     def validate(self, X_test, y_test, L_test):
+        loss, metrics = lcm_metrics(self.num_classes, self.alpha)
         # load the saved model
-        saved_model = load_model(self.model_filepath)
+        saved_model = load_model(self.model_filepath, custom_objects={
+            "K": K,
+            "precision_1k": basic_metrics[0],
+            "precision_2k": basic_metrics[1],
+            "precision_3k": basic_metrics[2],
+            "precision_5k": basic_metrics[3],
+            "recall_1k": basic_metrics[4],
+            "recall_2k": basic_metrics[5],
+            "recall_3k": basic_metrics[6],
+            "recall_5k": basic_metrics[7],
+            "F1_1k": basic_metrics[8],
+            "F1_2k": basic_metrics[9],
+            "F1_3k": basic_metrics[10],
+            "F1_5k": basic_metrics[11],
+            "lcm_loss": loss,
+            "lcm_precision_1k": metrics[0],
+            "lcm_precision_2k": metrics[1],
+            "lcm_precision_3k": metrics[2],
+            "lcm_precision_5k": metrics[3],
+            "lcm_recall_1k": metrics[4],
+            "lcm_recall_2k": metrics[5],
+            "lcm_recall_3k": metrics[6],
+            "lcm_recall_5k": metrics[7],
+            "lcm_f1_1k": metrics[8],
+            "lcm_f1_2k": metrics[9],
+            "lcm_f1_3k": metrics[10],
+            "lcm_f1_5k": metrics[11],
+        })
         # evaluate the model
         result = saved_model.evaluate([X_test, y_test], L_test, verbose=1)
         print("Best model result: ", result)
