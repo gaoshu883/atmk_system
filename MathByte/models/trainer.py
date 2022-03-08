@@ -28,7 +28,7 @@ class LABSModel:
         mc_monitor = "val_precision_1k"
         patience = 2
         if (use_att == False) & (use_lcm == False):
-            patience = 10  # basic 模型做较大设置
+            patience = 20  # basic 模型做较大设置
         print(patience, "patience")
 
         if use_lcm:
@@ -86,7 +86,7 @@ class LABSModel:
             "lcm_f1_5k": metrics[11],
         })
         # evaluate the model
-        result = saved_model.evaluate([X_test, y_test], L_test, verbose=1)
+        result = saved_model.evaluate([X_test, L_test], y_test, verbose=1)
         print("Best model result: ", result)
 
     def __get_saved_model_name(self, ):
