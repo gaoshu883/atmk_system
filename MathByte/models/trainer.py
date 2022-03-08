@@ -55,21 +55,22 @@ class LABSModel:
 
     def validate(self, X_test, y_test, L_test):
         loss, metrics = lcm_metrics(self.num_classes, self.alpha)
+        b_metrics = basic_metrics()
         # load the saved model
         saved_model = load_model(self.model_filepath, custom_objects={
             "K": K,
-            "precision_1k": basic_metrics[0],
-            "precision_2k": basic_metrics[1],
-            "precision_3k": basic_metrics[2],
-            "precision_5k": basic_metrics[3],
-            "recall_1k": basic_metrics[4],
-            "recall_2k": basic_metrics[5],
-            "recall_3k": basic_metrics[6],
-            "recall_5k": basic_metrics[7],
-            "F1_1k": basic_metrics[8],
-            "F1_2k": basic_metrics[9],
-            "F1_3k": basic_metrics[10],
-            "F1_5k": basic_metrics[11],
+            "precision_1k": b_metrics[0],
+            "precision_2k": b_metrics[1],
+            "precision_3k": b_metrics[2],
+            "precision_5k": b_metrics[3],
+            "recall_1k": b_metrics[4],
+            "recall_2k": b_metrics[5],
+            "recall_3k": b_metrics[6],
+            "recall_5k": b_metrics[7],
+            "F1_1k": b_metrics[8],
+            "F1_2k": b_metrics[9],
+            "F1_3k": b_metrics[10],
+            "F1_5k": b_metrics[11],
             "lcm_loss": loss,
             "lcm_precision_1k": metrics[0],
             "lcm_precision_2k": metrics[1],
