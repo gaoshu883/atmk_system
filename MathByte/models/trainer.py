@@ -1,8 +1,8 @@
 import numpy as np
 import os
 import keras
-from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint
-
+from keras.callbacks import TensorBoard, EarlyStopping, ModelCheckpoint, CSVLogger
+from keras.models import load_model
 
 from .lstm import Classifier
 from .lcm import LabelConfusionModel
@@ -27,7 +27,7 @@ class LABSModel:
         mc_monitor = "val_precision_1k"
         patience = 2
         if (use_att == False) & (use_lcm == False):
-            patience = 20
+            patience = 10  # basic 模型做较大设置
         print(patience, "patience")
 
         if use_lcm:
@@ -39,17 +39,25 @@ class LABSModel:
         tb = TensorBoard(log_dir=os.path.join(log_dir, "fit"))
         # 设置 early stop
         es = EarlyStopping(monitor=es_monitor, mode='min',
-                           verbose=1, patience=patience)
-        mc = ModelCheckpoint(self.model_filepath, monitor=mc_monitor,
-                             mode='max', verbose=1, save_best_only=True)
-        self.callbacks = [tb, es, mc]
+                           verbose=1, patience=patience, min_delta=0.0001)
+        # 保存 val_loss 最小时的model
+        mc = ModelCheckpoint(self.model_filepath, monitor=es_monitor,
+                             mode='min', verbose=1, save_best_only=True)
+        # 保存训练过程数据到csv文件
+        logger = CSVLogger(os.path.join(log_dir, "training.csv"))
+        self.callbacks = [tb, es, mc, logger]
 
-    def train(self, data_package, label_data):
-        X_train, y_train, X_test, y_test = data_package
-        L_train, L_test = label_data
+    def train(self, X_train, y_train, L_train):
         model = self.model if self.use_lcm else self.basic_model
         model.fit([X_train, L_train], y_train,
-                  batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_data=([X_test, L_test], y_test), callbacks=self.callbacks)
+                  batch_size=self.batch_size, verbose=1, epochs=self.epochs, validation_split=0.2, callbacks=self.callbacks)
+
+    def validate(self, X_test, y_test, L_test):
+        # load the saved model
+        saved_model = load_model(self.model_filepath)
+        # evaluate the model
+        result = saved_model.evaluate([X_test, y_test], L_test, verbose=1)
+        print("Best model result: ", result)
 
     def __get_saved_model_name(self, ):
         '''

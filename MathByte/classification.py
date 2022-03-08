@@ -5,7 +5,7 @@ import argparse
 import logging
 from datetime import datetime
 import pytz
-from sklearn.model_selection import KFold, StratifiedKFold
+from sklearn.model_selection import KFold, train_test_split
 
 from models import trainer
 import utils
@@ -55,44 +55,38 @@ if __name__ == '__main__':
         model_name = "lbs"
     logging.info("model name %s" % model_name)
     # ========== model training: ==========
-    # shuffle, split,
     X = np.array(X)
     y = np.array(y)
-    kf = KFold(shuffle=True)    # 默认5折
-    n = 0
-    t_k = utils.randomword(6)
-    for train_index, test_index in kf.split(X):
-        n += 1
-        if n > args.round:
-            break
-        file_id = '%s-%s-%d-%s' % (t_k, model_name, n, datetime.now(pytz.timezone('Asia/Shanghai')
-                                                                    ).strftime("%m%d-%H%M%S"))
-        log_dir = os.path.join('logs', file_id)
-        print("TRAIN:", train_index, len(train_index),
-              "TEST:", test_index, len(test_index))
-        X_train, X_test = X[train_index], X[test_index]
-        y_train, y_test = y[train_index], y[test_index]
-        np.random.seed(n)  # 这样保证了每次试验的seed一致
-        data_package = [X_train, y_train, X_test, y_test]
-        '''
-        初始化模拟标签数据（L_train,L_test）
-        shape=(None,num_classes)
-        [[  0   1   2 ... 424 425 426]
-         [  0   1   2 ... 424 425 426]
-         [  0   1   2 ... 424 425 426]
-         ...
-         [  0   1   2 ... 424 425 426]
-         [  0   1   2 ... 424 425 426]
-         [  0   1   2 ... 424 425 426]]
-        '''
-        L_train = np.array([np.array(range(config.num_classes))
-                           for i in range(len(X_train))])
-        L_test = np.array([np.array(range(config.num_classes))
-                          for i in range(len(X_test))])
-        initial_labels = [L_train, L_test]
-
-        logging.info('--Round: %d', n)
-        labs_model = trainer.LABSModel(
-            config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
-        labs_model.train(data_package, initial_labels)
-        logging.info('=======End=======')
+    # shuffle, split,
+    # 确保每次随机出来的数据是一样的
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.25, random_state=1863)
+    print("TOTAL:", len(X),
+          "TRAIN:", X_train, len(X_train),
+          "TEST:", X_test, len(X_test))
+    file_id = '%s-%s-%s' % (utils.randomword(6), model_name, datetime.now(pytz.timezone('Asia/Shanghai')
+                                                                          ).strftime("%m%d-%H%M%S"))
+    log_dir = os.path.join('logs', file_id)
+    np.random.seed(9)  # 这样保证了每次试验的seed一致
+    '''
+    初始化模拟标签数据（L_train,L_test）
+    shape=(None,num_classes)
+    [[  0   1   2 ... 424 425 426]
+        [  0   1   2 ... 424 425 426]
+        [  0   1   2 ... 424 425 426]
+        ...
+        [  0   1   2 ... 424 425 426]
+        [  0   1   2 ... 424 425 426]
+        [  0   1   2 ... 424 425 426]]
+    '''
+    L_train = np.array([np.array(range(config.num_classes))
+                        for i in range(len(X_train))])
+    L_test = np.array([np.array(range(config.num_classes))
+                       for i in range(len(X_test))])
+    logging.info('=====Start=====')
+    labs_model = trainer.LABSModel(
+        config, embeddings_2dlist, label_emb_matrix=label_emb_2dlist, use_att=args.use_att, use_lcm=args.use_lcm, log_dir=log_dir)
+    labs_model.train(X_train, y_train, L_train)
+    labs_model.validate(X_test, y_test, L_test)
+    logging.info('=======End=======')
+    # 模型训练完毕后在测试集上最终评估
