@@ -24,8 +24,6 @@ parser.add_argument('--use_lcm', default=False, type=bool,
                     help='True for use label confusion model')
 parser.add_argument('--config', default='config/config_waa1.yml', type=str,
                     help='config file')
-parser.add_argument('--round', default=5, type=int,
-                    help='round number')
 args = parser.parse_args()
 
 if __name__ == '__main__':

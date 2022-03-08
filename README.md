@@ -96,7 +96,6 @@ python classification.py --use_lcm=True # 使用 label confusion model
 python classification.py --use_att=True # 使用 label attention
 python classification.py --use_lcm=True --use_att=True # 使用 ls & la
 python classification.py --config=config/config_a1.yml # 指定配置文件
-python classification.py --round=1 # 仅运行5折中的round次
 ```
 
 ## 鸣谢
