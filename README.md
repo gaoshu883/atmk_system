@@ -1,7 +1,7 @@
 # ATMK研究平台
 
 ## 数据
-链接: https://pan.baidu.com/s/1unX4PyMsunoSkHmJ7OlH9Q?pwd=dd9r 提取码: dd9r 
+链接: https://pan.baidu.com/s/1BE4yLZq2CBbicmblXQgMdw?pwd=w4ii 提取码: w4ii
 
 + sql 文件为 Web 服务的 MySQL 数据库文件
 + 其余为词向量和公式向量等，需复制到当前项目的 `file_data` 目录下
